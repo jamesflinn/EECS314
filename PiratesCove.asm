@@ -26,10 +26,16 @@ options_get_supplies:	.asciiz "2. Buy supplies\n"
 status_date:		.asciiz "Date: \t"
 status_weather:		.asciiz "Weather: \t"
 status_health:		.asciiz "Health: \t"
-status_food:		.asciiz "Food: \t"
-status_rum:		.asciiz "Rum: \t"
+status_food:		.asciiz "Fish:\t\t"
+status_rum:		.asciiz "Rum:\t\t"
 status_traveled:	.asciiz "Distance traveled: \t"
-status_gold:		.asciiz "Gold: \t"
+status_gold:		.asciiz "Gold:\t\t"
+status_clothes:		.asciiz "Clothes:\t"
+status_ammo:		.asciiz "Ammo:\t\t"
+status_hook:		.asciiz "Hooks:\t\t"
+status_mast:		.asciiz "Masts:\t\t"
+status_sail:		.asciiz "Sails:\t\t"
+status_rudder:		.asciiz "Rudder: \t"	
 
 # Store messages - these are available at all stores
 store_message:		.asciiz "Welcome to the store!\n"
@@ -165,8 +171,19 @@ main:
 	li $s0, 1600
 	
 	jal store
+	jal check_supplies
 	
-	la $a0, new_line
+	li $v0, 10
+	syscall
+
+# ********************************************
+# Prints out a list of all of the available supplies
+# ********************************************
+check_supplies:
+	la $t0, item_count
+	
+	# print fish info
+	la $a0, status_gold
 	li $v0, 4
 	syscall
 	
@@ -178,15 +195,118 @@ main:
 	li $v0, 4
 	syscall
 	
-	li $v0, 10
+	# print fish info
+	la $a0, status_food
+	li $v0, 4
 	syscall
+	
+	lw $a0, ($t0)
+	li $v0, 1
+	syscall
+	
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	
+	# print rum info
+	la $a0, status_rum
+	li $v0, 4
+	syscall
+	
+	lw $a0, 4($t0)
+	li $v0, 1
+	syscall
+	
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	
+	# print clothes info
+	la $a0, status_clothes
+	li $v0, 4
+	syscall
+	
+	lw $a0, 8($t0)
+	li $v0, 1
+	syscall
+	
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	
+	# print ammo info
+	la $a0, status_ammo
+	li $v0, 4
+	syscall
+	
+	lw $a0, 12($t0)
+	li $v0, 1
+	syscall
+	
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	
+	# print hook info
+	la $a0, status_hook
+	li $v0, 4
+	syscall
+	
+	lw $a0, 16($t0)
+	li $v0, 1
+	syscall
+	
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	
+	# print mast info
+	la $a0, status_mast
+	li $v0, 4
+	syscall
+	
+	lw $a0, 20($t0)
+	li $v0, 1
+	syscall
+	
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	
+	# print sail info
+	la $a0, status_sail
+	li $v0, 4
+	syscall
+	
+	lw $a0, 24($t0)
+	li $v0, 1
+	syscall
+	
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	
+	# print rudder info
+	la $a0, status_rudder
+	li $v0, 4
+	syscall
+	
+	lw $a0, 28($t0)
+	li $v0, 1
+	syscall
+	
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	
+	jr $ra	
 
 # ********************************************
 # Enters the store
 # User can purchase supplies using their money
 # ********************************************
 store:
-	
+
 store_main:
 	li $t0, 0	# total store bill
 	la $t1, store_prices
