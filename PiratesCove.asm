@@ -6,6 +6,7 @@ island_depart:		.asciiz "You have departed the island \n"
 
 #print mesages
 print_distance: 	.asciiz "You have traveled: \t"
+print_day:			.asciiz "You are on day: \t"
 
 #option menu for island
 island_optshop:		.asciiz "1. Shop at local market \n"
@@ -157,6 +158,8 @@ crew_health:		.word 3, 3, 3, 3, 3
 # $s3: stores the next island you will need to go to 
 # $s4: stores the rationing level (1, 2, or 3) 
 # $s5: stores the current day
+# s6: stores the food ration number. 1- bare bones. 2- meager, 3- filling 
+# s7: stores the number of living people 
 # ********************************************
 	
 	.globl main
@@ -171,11 +174,6 @@ main:
 	li $v0, 40
 	move $a1, $a0
 	li $a0, 0
-	syscall 
-
-	li $v0, 42
-	li $a0, 0
-	li $a1, 10 # max number of miles you can travel
 	syscall 
 
 	# initialize day and distance to 0
@@ -262,42 +260,126 @@ main:
 	syscall
 
 simulate_day:
+	addi $s5, $s5, 1 #increment the day
+	li $v0, 4 	#Print the menu seperation 
+	la $a0, menu_seperation
+	syscall
+
+	la $a0, print_day #print the print_day message 
+	syscall 
+	li $v0, 1 
+	add $a0, $s5, $zero  #print the day 
 	li $v0, 41 
 	syscall 
-	#add 1 to distance traveled in a day 
-	addi $a0, $a0, 1 #add 1 to random distance 
+	li $v0, 4 #Print a new line 
+	la $a0, new_line
+	syscall 
+	la $a0, menu_seperation
+	syscall 
+
+	li $v0, 41
+	syscall
+
+crew_eat:
+	beq $s6, 1, crew_barebones
+	beq $s6, 2, crew_meager
+	beq $s6, 3, crew_filling
+
+crew_meager: 
+	addi $t1, $zero, 2 
+	#check the amount of fish we have in the array item_count
+	la $t4, item_count 
+	li $t3, 0
+	add $t2, $t3, $t4 
+	lw $t5, 0($t2) #value of amount of fish
+	blt $t5, $zero, GAME_OVER
+	#multiplying the number of living people and the amount of food they will consume
+	mult $s7, $t1
+	mflo $t6
+	sub $t5, $t5, $t6
+	#store food amount back into item count 
+	sw $t5, 0($t2)
+	j crew_rum
+
+crew_filling: 
+	addi $t1, $zero, 3 
+	#check the amount of fish that we have
+	la $t4, item_count 
+	li $t3, 0
+	add $t2, $t3, $t4 
+	lw $t5, 0($t2) #value of amount of fish
+	blt $t5, $zero, GAME_OVER
+	#multiply the numner of living people by the amount of food to consume
+	mult $s7, $t1
+	mflo $t6
+	sub $t5, $t5, $t6
+	#store food amount back into item count 
+	sw $t5, 0($t2)
+	j crew_rum
+
+crew_barebones: 	 
+	addi $t1, $zero, 1
+	#check the amount of fish that we have
+	la $t4, item_count 
+	li $t3, 0
+	add $t2, $t3, $t4 
+	lw $t5, 0($t2) #value of amount of fish
+	blt $t5, $zero, GAME_OVER
+	#multiply the numner of living people by the amount of food to consume
+	mult $s7, $t1
+	mflo $t6
+	sub $t5, $t5, $t6
+	#store food amount back into item count 
+	sw $t5, 0($t2)
+
+crew_rum:
+	addi $t1, $zero, 1
+	#check the amount of rum that we have 
+	la $t4, item_count 
+	li $t3, 1
+	add $t2, $t3, $t4 
+	lw $t5, 0($t2) #value of amount of fish
+	blt $t5, $zero, GAME_OVER
+	#deduct 1 handle of rum for each crew member
+	sub $t5, $t5, $s7
+	#store amount of rum back into item count 
+	sw $t5, 0($t2)	
 	
 check_pace:
 	# checks the pace and changes the distance based on that
-	beq $s2, 1, pace_slow
-	beq $s2, 2, pace_medium
-	#multi $a0, 3
+	beq 1, $s2, pace_slow
+	beq 2, $s2, pace_medium
+	addi $t1, $t1, 3
+	mult $a0, $t1 #multiply distance by 3 for grueling 
 	mflo $t0
 	j check_island
 
 pace_slow:
-	#multi $a0, 1
+	addi $t1, $t1, 1
+	mult $a0, $t1
 	mflo $t0
 	j check_island
 
 pace_medium:
-	#multi $a0, 2
+	addi $t1, $t1, 2
+	mult $a0, $t1
 	mflo $t0
 
 # TODO: add code to get random events, decrement food, recalculate health
 check_island:
 	# adding total distance to $s1
-	add $s1, $s1, $a0
+	add $s1, $s1, $t0
 
 	# check if next island is reached
 	la $t3, island_array
 	add $t4, $s3, $zero
-	#multi $t4, 4 
+	addi $t1, $t1, 4
+	mult $t4, $t1
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
 	bge $s1, $t4, island_arrive #check is distance is equal to island location
-	#j option_menu_sea
+	j option_menu_sea
 
 island_arrive:
 	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array 
