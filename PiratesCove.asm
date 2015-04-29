@@ -135,8 +135,11 @@ name_crew_4:		.space 40
 
 # stores the prices in a array
 store_prices:		.word 1 1 10 1 50 10 10 10
+# stores the amount of items bought in the store
+store_item_count:	.word 0 0 0 0 0 0 0 0
 
 # stores the amount of items of a player
+# contains in order: fish, rum, clothes, ammo, hook, mast, sail, rudder
 item_count:			.word 0 0 0 0 0 0 0 0
 
 # distance each island occurs
@@ -246,8 +249,10 @@ main:
 	# initialize gold value
 	li $s0, 1600
 	
+	jal store
 	jal check_supplies
-
+	jal store
+	jal check_supplies
 	# display start menu
 
 	# jal simulate_day
@@ -342,7 +347,6 @@ option_menu_island:
 
 	beq $t4, 1, store # if user selected option 1 then go to the shop meny 
 	#beq $t4, 1, exit_island
-
 
 # ********************************************
 # Prints out the distance traveled
@@ -492,10 +496,22 @@ check_supplies:
 # ********************************************
 store:
 
+	# initialize all store items to 0
+	la $t0, store_item_count
+	li $t1, 0
+	sw $t1, ($t0)
+	sw $t1, 4($t0)
+	sw $t1, 8($t0)
+	sw $t1, 12($t0)
+	sw $t1, 16($t0)
+	sw $t1, 20($t0)
+	sw $t1, 24($t0)
+	sw $t1, 28($t0)
+
 store_main:
 	li $t0, 0	# total store bill
 	la $t1, store_prices
-	la $t2, item_count
+	la $t2, store_item_count
 	li $t9, 0
 
 # calculates the total bill
@@ -584,7 +600,7 @@ store_main_2:
 	li $v0, 5
 	syscall
 	
-	la $t1, item_count
+	la $t1, store_item_count
 	
 	beq $v0, 1, store_fish_section
 	beq $v0, 2, store_rum_section
@@ -710,6 +726,25 @@ store_exit:
 	# otherwise return from function after adjusting values
 	bgt $t0, $s0, store_exit_error
 	sub $s0, $s0, $t0
+
+	# add store items to item_count
+	la $t0, item_count
+	la $t1, store_item_count
+	li $t9, 0
+
+store_finish:
+	lw $t2, ($t0)
+	lw $t3, ($t1)
+	add $t4, $t2, $t3
+	sw $t4, ($t0)
+
+	addi $t0, $t0, 4
+	addi $t1, $t1, 4
+	addi $t9, $t9, 1
+	beq $t9, 8, store_return
+	j store_finish
+
+store_return:
 	jr $ra
 	
 store_exit_error:
