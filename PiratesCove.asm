@@ -123,6 +123,9 @@ mast_buy_message:	.asciiz "How many masts would you like to buy? "
 sail_buy_message:	.asciiz "How many sails would you like to buy? "
 rudder_buy_message:	.asciiz "How many rudders would you like to buy? "
 
+# Disease messages
+contract_disease_message:	.asciiz "A crew member has contracted scurvy! Their name is "
+
 # Seperates different menus
 menu_seperation:	.asciiz "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 new_line:			.asciiz "\n"
@@ -147,7 +150,7 @@ item_count:			.word 0 0 0 0 0 0 0 0 1600
 island_array: 		.word 0, 100, 300, 450, 700, 800, 1000
 
 # health of each crew members
-crew_health:		.word 3, 3, 3, 3, 3
+crew_health:		.word 0, 0, 0, 0, 0
 
 	.text
 # ********************************************
@@ -244,8 +247,8 @@ main:
 	li $v0, 8
 	syscall
 	
-	jal store
-	jal check_supplies
+	li $s0, 0
+	jal contract_check
 	# display start menu
 
 	# jal simulate_day
@@ -913,11 +916,18 @@ fish:
 fishing_exit:
 	jr $ra
 	
-contract_disease:
+# ********************************************
+# Checks to see if a crew member gets a disease
+# ********************************************
+contract_check:
 	# get random number between 1 and 100
 	# compare to stamina value
 	# if greater than stamina, one person will contract disease
 	# otherwise, crew stays healthy
+
+	# save $ra on stack
+	addi $sp, $sp, 4
+	sw $ra, 4($sp)
 
 	# get random number between 0 and 100
 	li $a0, 0
@@ -925,14 +935,71 @@ contract_disease:
 	li $v0, 42
 	syscall
 
-	bgt $a0, $s0, check_health
+	bgt $a0, $s0, contract_disease
+	jr $ra
 
-check_health:
+contract_disease:
+	# get random number to see which crew member gets the disease
+	li $a0, 0
+	li $a1, 6
+	li $v0, 42
+	syscall
+
+	move $t0, $a0
 	
-	
-	
-	
-	
-	
-	
+	la $a0, contract_disease_message
+	li $v0, 4
+	syscall
+
+	# display crew name
+	move $a0, $t0
+	jal get_crew_name
+	move $a0, $v0
+	li $v0, 4
+	syscall
+
+	# get index of array and change to 1
+	sll $t0, $t0, 4
+	la $t1, crew_health
+
+	add $t1, $t1, $t0
+	lw $t2, ($t1)
+	li $t2, 1
+	sw $t2, ($t1)
+
+	lw $ra, 4($sp)
+	addi $sp, $sp, -4
+	jr $ra
+
+# ********************************************
+# Given an index, returns the address of the crew name in $v0
+# $a0: index of crew member whose name will be returned
+# ********************************************
+get_crew_name:
+	beq $a0, 0, get_captain_name
+	beq $a0, 1, get_crew_1_name
+	beq $a0, 2, get_crew_2_name
+	beq $a0, 3, get_crew_3_name
+	beq $a0, 4, get_crew_4_name
+
+get_captain_name:
+	la $v0, name_captain
+	jr $ra
+
+get_crew_1_name:
+	la $v0, name_crew_1
+	jr $ra
+
+get_crew_2_name:
+	la $v0, name_crew_2
+	jr $ra
+
+get_crew_3_name:
+	la $v0, name_crew_3
+	jr $ra
+
+get_crew_4_name:
+	la $v0, name_crew_4
+	jr $ra
+
 	
