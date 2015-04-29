@@ -4,44 +4,55 @@ island_approach:	.asciiz "You are approaching \n"
 island_reached: 	.asciiz "You are on island \n" 
 island_depart:		.asciiz "You have departed the island \n"
 
-#print messages
+#print mesages
 print_distance: 	.asciiz "You have traveled: \t"
 print_day:			.asciiz "You are on day: \t"
 
+#print diseases 
+print_scurvy 		.asciiz "has contracted scurvy! \n"
 #option menu for island
-island_optshop:		.asciiz"1. Shop at local market \n"
-island_optleave:	.asciiz"2. Depart island and continue journey \n"
-island_optcheck:	.asciiz"3. Check Supplies \n"
-island_optpace:		.asciiz"4. Change Pace\n"
-island_optrations: 	.asciiz"5. Change Food Rations \n"
-island_optdist: 	.asciiz"6. Distance Traveled \n"
-island_optenter: 	.asciiz"7. Enter Option: \n"
+island_optshop:		.asciiz "1. Shop at local market \n"
+island_optleave:	.asciiz "2. Depart island and continue journey \n"
+island_optcheck:	.asciiz "3. Check Supplies \n"
+island_optpace:		.asciiz "4. Change Pace\n"
+island_optrations: 	.asciiz "5. Change Food Rations \n"
+island_optdist: 	.asciiz "6. Distance Traveled \n"
+island_optenter: 	.asciiz "Enter Option: \n"
+
 
 #weather options
-sea_cond1:			.asciiz"calm\n"
-sea_cond2: 			.asciiz"stormy\n"
-sea_cond3:			.asciiz"hurricane!\n"
+sea_cond1:			.asciiz "calm\n"
+sea_cond2: 			.asciiz "stormy\n"
+sea_cond3:			.asciiz "hurricane!\n"
 
 #food rations options
-food_title:			.asciiz"Change food rations\n"
-food_current_start:	.asciiz"(currently \""
-filling:			.asciiz"filling\")\n"
-meager:				.asciiz"meager\")\n"
-barebones:			.asciiz"bare bones\")\n"
-filling_option: 	.asciiz"1. filling: meals are large and generous\n"
-meager_option:		.asciiz"2. meager: meals are small, but adequate\n"
-bare_option:		.asciiz"3. bare bones: mealse are very small; everyone stays hungry \n"
-food_intro: 		.asciiz"The amounf of food the people in your crew eat each day can change. These amounts are:\n"
+food_title:			.asciiz "Change food rations\n"
+food_current_start:	.asciiz "(currently \""
+filling:			.asciiz "filling\")\n"
+meager:				.asciiz "meager\")\n"
+barebones:			.asciiz "bare bones\")\n"
+filling_option: 	.asciiz "1. filling: meals are large and generous\n"
+meager_option:		.asciiz "2. meager: meals are small, but adequate\n"
+bare_option:		.asciiz "3. bare bones: mealse are very small; everyone stays hungry \n"
+food_intro: 		.asciiz "The amounf of food the people in your crew eat each day can change. These amounts are:\n"
 
 #pace menu 
-pace_steady:		.asciiz"1. Steady - You travel about 8 hours a day, taking frequent rests. \n"
-pace_strenuous:		.asciiz"2. Strenuous - You travelabout 12 hours a day, starting just after sunrise and stoping shortly before sunset. \n You take care not to get too tired.\n You stop to rest only when necessary. You finish each day feeling very tired \n"
+pace_intro: 		.asciiz "Select your pace"
+pace_steady:		.asciiz "1. Steady - You travel about 8 hours a day, taking frequent rests. \n"
+pace_strenuous:		.asciiz "2. Strenuous - You travelabout 12 hours a day, starting just after sunrise and stoping shortly before sunset. \n You take care not to get too tired.\n You stop to rest only when necessary. You finish each day feeling very tired \n"
 pace_grueling:		.asciiz "3. Grueling- You travel about 16 hourse a day, starting before sunrise and continueing until dark. \n You almost never stop to rest. You do not get enough sleep at night. You finish each day feeling exhausted, and your helath suffers. \n"
 
+# Fishing menu
+fish_message:		.asciiz "Your ship has arrived at a fishing spot.\n"
+fish_option_1:		.asciiz "1. Go fishing\n"
+fish_option_2:		.asciiz "2. Leave fishing spot\n"
+fish_input_message: .asciiz "What do you want to do? "
+fish_error:			.asciiz "Input must be either 1 or 2\n"
+
 #Fishing option is available only when water is calm, randomly generates fish caught
-fish_net:			.asciiz"Your crew has casted a net into the sea."
-fish_total: 		.asciiz"You have caught"
-fish_totalcont:		.asciiz"fish\n"
+fish_net:			.asciiz "Your crew has casted a net into the sea."
+fish_total: 		.asciiz "You have caught "
+fish_totalcont:		.asciiz " fish\n"
 
 # Messages used at the start of the game
 intro_message:		.asciiz "The goal of this game is for the captain to make it to the treasure. You will have to survive starvation, mutiny, scurvy, enemies.\n"
@@ -53,14 +64,11 @@ three:				.asciiz "3: "
 four:				.asciiz "4: "
 
 # Options menu
-options_continue:	.asciiz "1. Continue on path\n"
-options_supplies:	.asciiz "2. Check supplies\n"
-options_distance:	.asciiz "3. Check distance to next destination\n"
-options_pace:		.asciiz "4. Change pace\n"
-options_food:		.asciiz "5. Change food rations\n"
-options_stop:		.asciiz "6. Stop to rest\n"
-options_talk:		.asciiz "7. Talk to people\n"
-options_buy:		.asciiz "8. Buy supplies\n"
+options_supplies:	.asciiz "1. Check supplies\n"
+options_distance:	.asciiz "2. Check distance to next destination\n"
+options_pace:		.asciiz "3. Change pace\n"
+options_food:		.asciiz "4. Change food rations\n"
+options_buy:		.asciiz "5. Buy supplies\n"
 
 # Options menu for start
 options_start:		.asciiz "1. Start on your voyage\n"
@@ -71,7 +79,7 @@ status_date:		.asciiz "Date: \t"
 status_weather:		.asciiz "Weather: \t"
 status_health:		.asciiz "Health: \t"
 status_food:		.asciiz "Fish:\t\t"
-status_rum:		.asciiz "Rum:\t\t"
+status_rum:			.asciiz "Rum:\t\t"
 status_traveled:	.asciiz "Distance traveled: \t"
 status_gold:		.asciiz "Gold:\t\t"
 status_clothes:		.asciiz "Clothes:\t"
@@ -85,14 +93,14 @@ status_rudder:		.asciiz "Rudder: \t"
 store_message:		.asciiz "Welcome to the store!\n"
 store_total:		.asciiz "Total bill: \t$"
 store_item_input:	.asciiz "What item would you like to buy? "
-store_fish:		.asciiz "1. Fish:         1 gold doubloons\n" 	# .2 per gallon
-store_rum:		.asciiz "2. Rum:          1 gold doubloons\n" 	# .1 per gallon
+store_fish:			.asciiz "1. Fish:         1 gold doubloons\n" 	# .2 per gallon
+store_rum:			.asciiz "2. Rum:          1 gold doubloons\n" 	# .1 per gallon
 store_clothes:		.asciiz "3. Clothes:      10 gold doubloons\n" 	# 10 per set
-store_ammo:		.asciiz "4. Cannon Balls: 1 gold doubloons\n"	# 1 per ball
-store_hook:		.asciiz "5. Hook Arm:     50 gold doubloons\n"
+store_ammo:			.asciiz "4. Cannon Balls: 1 gold doubloons\n"	# 1 per ball
+store_hook:			.asciiz "5. Hook Arm:     50 gold doubloons\n"
 store_spare:		.asciiz "6. Spare Parts\n"
 store_exit_message:	.asciiz "7. Exit\n"
-store_mast:		.asciiz "Mast:         10 gold doubloons\n"
+store_mast:			.asciiz "Mast:         10 gold doubloons\n"
 store_sails:		.asciiz "Sail:         10 gold doubloons\n"
 store_rudder:		.asciiz "Rudder:       10 gold doubloons\n"
 store_error:		.asciiz "Must enter a number between 1 and 6.\n"
@@ -118,7 +126,7 @@ rudder_buy_message:	.asciiz "How many rudders would you like to buy? "
 
 # Seperates different menus
 menu_seperation:	.asciiz "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-new_line:		.asciiz "\n"
+new_line:			.asciiz "\n"
 
 # crew members names
 name_captain:		.space 40
@@ -129,12 +137,18 @@ name_crew_4:		.space 40
 
 # stores the prices in a array
 store_prices:		.word 1 1 10 1 50 10 10 10
+# stores the amount of items bought in the store
+store_item_count:	.word 0 0 0 0 0 0 0 0
 
 # stores the amount of items of a player
-item_count:		.word 0 0 0 0 0 0 0 0
+# contains in order: fish, rum, clothes, ammo, hook, mast, sail, rudder
+item_count:			.word 0 0 0 0 0 0 0 0
 
 # distance each island occurs
-island_array: .word   0, 100, 300, 450, 700, 800, 1000
+island_array: 		.word 0, 100, 300, 450, 700, 800, 1000
+
+# health of each crew members
+crew_health:		.word 3, 3, 3, 3, 3
 
 	.text
 # ********************************************
@@ -155,16 +169,13 @@ island_array: .word   0, 100, 300, 450, 700, 800, 1000
 # ********************************************
 main:
 	# seeding random number generator for number of miles traveled in a day
+	li $v0, 30
+	syscall
+	
 	li $v0, 40
+	move $a1, $a0
 	li $a0, 0
-	li $a1, 12121212 
 	syscall 
-
-	li $v0, 42
-	li $a0, 0
-	li $a1, 10 # max number of miles you can travel
-	syscall 
-	addi $a0, 1 #add 1 to random distance 
 
 	# initialize day and distance to 0
 	li $s1, 0
@@ -238,7 +249,9 @@ main:
 	li $s0, 1600
 	
 	jal store
-
+	jal check_supplies
+	jal store
+	jal check_supplies
 	# display start menu
 
 	# jal simulate_day
@@ -247,8 +260,39 @@ main:
 	li $v0, 10
 	syscall
 
-simulate_day:
-	addi $s5, 1 #increment the day
+simulate_day_sea:
+
+	jal increment_day
+	jal option_menu_sea
+	jal add_distance
+
+	# check if next island is reached
+	la $t3, island_array #checking the island array to find distance of next island location 
+	add $t4, $s3, $zero 
+	addi $t1, $t1, 4
+	mult $t4, $t1
+	mflo $t4 
+	add $t3, $t3, $t4 
+	lw $t4, 0($t3)
+	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island 
+
+	#if island is not reached, continue 
+	jal crew_eat 
+	jal crew_rum 
+	jal check_island
+
+simulate_day_island: 
+	li $v0, 4	
+	la $a0, island_reached # message output for reaching an island 
+	syscall 
+
+	jal increment_day 
+	jal option_menu_island
+	jal crew_eat 
+	jal crew_rum 
+
+increment_day: 
+	addi $s5, $s5, 1 #increment the day
 	li $v0, 4 	#Print the menu seperation 
 	la $a0, menu_seperation
 	syscall
@@ -263,15 +307,47 @@ simulate_day:
 	la $a0, new_line
 	syscall 
 	la $a0, menu_seperation
-	syscall 
-
-	li $v0, 41
+	syscall 	
+	j $ra
+add_distance: 
+	# generate random number between 0-9
+	li $a0, 0
+	li $a1, 9
+	li $v0, 42
 	syscall
-	#increment the food consumed in a day 
+	addi $a0, $a0, 1 #ensures that the randomly generated number is 1 -10 
+
+check_pace:
+	# checks the pace and changes the distance based on that
+	beq  $s2, 1, pace_slow
+	beq  $s2, 2, pace_medium
+	
+pace_fast:
+	addi $t1, $zero, 3
+	mult $a0, $t1 #multiply distance by 3 for grueling 
+	mflo $t0
+	add $s1, $s1, $t0 
+	j $ra 
+
+pace_slow:
+	addi $t1, $zero, 1
+	mult $a0, $t1
+	mflo $t0
+	add $s1, $s1, $t0 
+	j $ra 
+
+pace_medium:
+	addi $t1, $t1, 2
+	mult $a0, $t1
+	mflo $t0
+	add $s1, $s1, $t0 
+	j $ra
+
 crew_eat:
 	beq $s6, 1, crew_barebones
 	beq $s6, 2, crew_meager
-	beq $s6, 3, crew_filling 
+	beq $s6, 3, crew_filling
+
 crew_meager: 
 	addi $t1, $zero, 2 
 	#check the amount of fish we have in the array item_count
@@ -286,6 +362,7 @@ crew_meager:
 	sub $t5, $t5, $t6
 	#store food amount back into item count 
 	sw $t5, 0($t2)
+	j $ra 
 
 crew_filling: 
 	addi $t1, $zero, 3 
@@ -301,6 +378,7 @@ crew_filling:
 	sub $t5, $t5, $t6
 	#store food amount back into item count 
 	sw $t5, 0($t2)
+	j $ra 
 
 crew_barebones: 	 
 	addi $t1, $zero, 1
@@ -316,6 +394,8 @@ crew_barebones:
 	sub $t5, $t5, $t6
 	#store food amount back into item count 
 	sw $t5, 0($t2)
+	j $ra 
+
 crew_rum:
 	addi $t1, $zero, 1
 	#check the amount of rum that we have 
@@ -327,49 +407,47 @@ crew_rum:
 	#deduct 1 handle of rum for each crew member
 	sub $t5, $t5, $s7
 	#store amount of rum back into item count 
-	sw $t5, 0($t2)
-check_pace:
-	# checks the pace and changes the distance based on that
-	beq 1, $s2, pace_slow
-	beq 2, $s2, pace_medium
-	addi $t1, $t1, 3
-	mult $a0, $t1 #multiply distance by 3 for grueling 
-	mflo $t0
-	j check_island
+	sw $t5, 0($t2)	
+	j $ra 
 
-pace_slow:
-	addi $t1, $t1, 1
-	mult $a0, $t1
-	mflo $t0
-	j check_island
-
-pace_medium:
-	addi $t1, $t1, 2
-	mult $a0, $t1
-	mflo $t0
 
 # TODO: add code to get random events, decrement food, recalculate health
-check_island:
-	# adding total distance to $s1
-	add $s1, $s1, $t0
-
-	# check if next island is reached
-	la $t3, island_array
-	add $t4, $s3, $zero
-	addi $t1, $t1, 4
-	mult $t4, $t1
-	mflo $t4 
-	add $t3, $t3, $t4 
-	lw $t4, 0($t3)
-	bge $s1, $t4, island_arrive #check is distance is equal to island location
-	j option_menu_sea
-
-island_arrive:
-	addi $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array 
-
-	li $v0, 4	
-	la $a0, island_reached # message output for reaching an island 
+option_menu_sea: 
+	li $v0, 4 
+	la $a0, menu_seperation 
 	syscall 
+
+	li $v0, 4
+	la $a0, option_supplies
+	syscall 
+
+	li $v0, 4
+	la $a0, option_distance
+	syscall 
+
+	li $v0, 4
+	la $a0, option_pace
+	syscall 
+
+
+	li $v0, 4
+	la $a0, option_food
+	syscall 
+ 
+
+	li $v0, 4
+	la $a0, island_optenter
+	syscall 
+
+	li $v0, 5
+	syscall 
+
+	li $t1, $v0 #store input in t1
+
+	beq  $t1, 1, call_check_supplies
+	beq  $t1, 2, call_change_pace
+	beq  $t1, 3, call_check_supplies
+	beq $t1, 4, call_change_rations
 
 option_menu_island: 
 	li $v0, 4
@@ -407,13 +485,97 @@ option_menu_island:
 	li $v0, 5 #reads user input for island option 
 	syscall 
 
-	addi $t4,0 
-	add $t4, $t4, $v0 #add user option number into temp register
+	add $t4, $zero, $v0 # add user option number into temp register
 
-	beq 1, $t4, shop_menu # if user selected option 1 then go to the shop meny 
-	beq 2, $t4, exit_island
+	beq $t4, 1, call_store_island # if user selected option 1 then go to the shop meny 
+	beq $t4, 2, call_leave_island
+	beq $t4, 3, call_check_supplies 
+	beq $t4, 5, call_change_rations
+	beq $t4, 6, call_distance_traveled
+call_store_island:
+	jal store 
+	j option_menu_island
+call_leave_island:
+	jal leave_island
+	j option_menu_island
+call_check_supplies:
+	jal check_supplies 
+	j option_menu_island
+call_change_pace:
+	jal change_pace 
+	j option_menu_island
+call_change_rations:
+	jal change_rations
+	j option_menu_island 
+call_distance_traveled:
+	li $v0, 4
+	la $a0, print_distance 
+	syscall 
+	li $v0, 1
+	la $a0, $s1 #prints out the total distance traveled 
+	syscall 
 
+	j option_menu_island
+change_rations:
+	li $v0, 4
+	la $a0, food_title 
+	syscall 
 
+	li $v0, 4
+	la $a0, food_intro
+	syscall 
+
+	li $v0, 4
+	la $a0, food_current_start 
+	syscall 
+
+	li $v0, 1
+	la $a0, $s6 #current food ration value 
+	syscall 
+
+	li $v0, 4
+	la $a0, filling_option 
+	syscall 
+
+	li $v0, 4
+	la $a0, meager_option 
+	syscall 
+
+	li $v0, 4
+	la $a0, bare_option
+	syscall 
+
+	li $v0, 4
+	la $a0, island_optenter
+	syscall 
+
+	li $v0, 5
+	syscall 
+
+	li $s6, $v0 #store new value in reg
+
+change_pace:
+
+	li $v0, 4
+	la $a0, pace_intro 
+	syscall 
+	li $v0, 4
+	la $a0, pace_steady  #description for steady pace
+	syscall 
+	li $v0, 4
+	la $a0, pace_strenous #description for strenous pace
+	syscall 
+	li $v0, 4
+	la $a0, pace_grueling #description for grueling pace
+	syscall 
+
+	li $v0, 5
+	syscall 
+	li $s2, $v0 #load the input into the s2 register 
+
+leave_island:
+	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array 
+	jal simulate_day_sea
 # ********************************************
 # Prints out the distance traveled
 # ********************************************
@@ -421,9 +583,11 @@ check_dist:
 	li $v0, 4 #print informatoin before the distance 
 	la $a0, print_distance 
 	syscall 
+
 	li $v0, 1 #print distance travelled 
 	add $a0, $s1, $zero 
 	syscall 
+
 	li $v0, 4 #print a new line 
 	la $a0, new_line
 	syscall 
@@ -560,10 +724,22 @@ check_supplies:
 # ********************************************
 store:
 
+	# initialize all store items to 0
+	la $t0, store_item_count
+	li $t1, 0
+	sw $t1, ($t0)
+	sw $t1, 4($t0)
+	sw $t1, 8($t0)
+	sw $t1, 12($t0)
+	sw $t1, 16($t0)
+	sw $t1, 20($t0)
+	sw $t1, 24($t0)
+	sw $t1, 28($t0)
+
 store_main:
 	li $t0, 0	# total store bill
 	la $t1, store_prices
-	la $t2, item_count
+	la $t2, store_item_count
 	li $t9, 0
 
 # calculates the total bill
@@ -652,7 +828,7 @@ store_main_2:
 	li $v0, 5
 	syscall
 	
-	la $t1, item_count
+	la $t1, store_item_count
 	
 	beq $v0, 1, store_fish_section
 	beq $v0, 2, store_rum_section
@@ -778,6 +954,25 @@ store_exit:
 	# otherwise return from function after adjusting values
 	bgt $t0, $s0, store_exit_error
 	sub $s0, $s0, $t0
+
+	# add store items to item_count
+	la $t0, item_count
+	la $t1, store_item_count
+	li $t9, 0
+
+store_finish:
+	lw $t2, ($t0)
+	lw $t3, ($t1)
+	add $t4, $t2, $t3
+	sw $t4, ($t0)
+
+	addi $t0, $t0, 4
+	addi $t1, $t1, 4
+	addi $t9, $t9, 1
+	beq $t9, 8, store_return
+	j store_finish
+
+store_return:
 	jr $ra
 	
 store_exit_error:
@@ -785,8 +980,83 @@ store_exit_error:
 	li $v0, 4
 	syscall
 	j store_main
-	
-	
+
+# ********************************************
+# Enters fishing spot
+# User has option to fish
+# ********************************************	
+fishing_spot:
+	# display fishing menu
+	la $a0, menu_seperation
+	li $v0, 4
+	syscall
+
+	la $a0, fish_message
+	syscall
+
+	la $a0, fish_option_1
+	syscall
+
+	la $a0, fish_option_2
+	syscall
+
+	la $a0, fish_input_message
+	syscall
+
+	li $v0, 5
+	syscall
+
+	beq $v0, 1, fish
+	beq $v0, 2, fishing_exit
+
+	# invalid input, display error, loop back to top
+	la $a0, fish_error
+	li $v0, 4
+	syscall
+	j fishing_spot
+
+fish:
+	la $a0, menu_seperation
+	li $v0, 4
+	syscall
+
+	la $a0, fish_net
+	syscall
+
+	# generate random number between 0-9
+	li $a0, 0
+	li $a1, 9
+	li $v0, 42
+	syscall
+
+	# add 10 to random number
+	addi $t0, $a0, 10
+
+	la $a0, fish_total
+	li $v0, 4
+	syscall
+
+	move $a0, $t0
+	li $v0, 1
+	syscall
+
+	la $a0, fish_totalcont
+	li $v0, 4
+	syscall
+
+	la $a0, menu_seperation
+	syscall
+
+	# get fish count
+	la $t1, item_count
+	lw $t2, ($t1)
+	# add to total fish
+	add $t0, $t0, $t2
+	# save back to array and return 
+	sw $t0, ($t1)
+
+fishing_exit:
+	jr $ra
 	
 	
 	
