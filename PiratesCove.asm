@@ -123,6 +123,9 @@ mast_buy_message:	.asciiz "How many masts would you like to buy? "
 sail_buy_message:	.asciiz "How many sails would you like to buy? "
 rudder_buy_message:	.asciiz "How many rudders would you like to buy? "
 
+# Disease messages
+contract_disease_message:	.asciiz "A crew member has contracted scurvy! Their name is "
+
 # Seperates different menus
 menu_seperation:	.asciiz "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 new_line:			.asciiz "\n"
@@ -140,19 +143,19 @@ store_prices:		.word 1 1 10 1 50 10 10 10
 store_item_count:	.word 0 0 0 0 0 0 0 0
 
 # stores the amount of items of a player
-# contains in order: fish, rum, clothes, ammo, hook, mast, sail, rudder
-item_count:			.word 0 0 0 0 0 0 0 0
+# contains in order: fish, rum, clothes, ammo, hook, mast, sail, rudder, gold
+item_count:			.word 0 0 0 0 0 0 0 0 1600
 
 # distance each island occurs
 island_array: 		.word 0, 100, 300, 450, 700, 800, 1000
 
 # health of each crew members
-crew_health:		.word 3, 3, 3, 3, 3
+crew_health:		.word 0, 0, 0, 0, 0
 
 	.text
 # ********************************************
 # REGISTERS USED
-# $s0: current amount of gold user has
+# $s0: stamina
 # $s1: total distance traveled
 # $s2: store the pace value, can store 1, 2, 3
 # $s3: stores the next island you will need to go to 
@@ -244,13 +247,8 @@ main:
 	li $v0, 8
 	syscall
 	
-	# initialize gold value
-	li $s0, 1600
-	
-	jal store
-	jal check_supplies
-	jal store
-	jal check_supplies
+	li $s0, 0
+	jal contract_check
 	# display start menu
 
 	# jal simulate_day
@@ -292,7 +290,7 @@ crew_meager:
 	li $t3, 0
 	add $t2, $t3, $t4 
 	lw $t5, 0($t2) #value of amount of fish
-	blt $t5, $zero, GAME_OVER
+	#blt $t5, $zero, GAME_OVER
 	#multiplying the number of living people and the amount of food they will consume
 	mult $s7, $t1
 	mflo $t6
@@ -308,7 +306,7 @@ crew_filling:
 	li $t3, 0
 	add $t2, $t3, $t4 
 	lw $t5, 0($t2) #value of amount of fish
-	blt $t5, $zero, GAME_OVER
+	#blt $t5, $zero, GAME_OVER
 	#multiply the numner of living people by the amount of food to consume
 	mult $s7, $t1
 	mflo $t6
@@ -324,7 +322,7 @@ crew_barebones:
 	li $t3, 0
 	add $t2, $t3, $t4 
 	lw $t5, 0($t2) #value of amount of fish
-	blt $t5, $zero, GAME_OVER
+	#blt $t5, $zero, GAME_OVER
 	#multiply the numner of living people by the amount of food to consume
 	mult $s7, $t1
 	mflo $t6
@@ -339,7 +337,7 @@ crew_rum:
 	li $t3, 1
 	add $t2, $t3, $t4 
 	lw $t5, 0($t2) #value of amount of fish
-	blt $t5, $zero, GAME_OVER
+	#blt $t5, $zero, GAME_OVER
 	#deduct 1 handle of rum for each crew member
 	sub $t5, $t5, $s7
 	#store amount of rum back into item count 
@@ -347,8 +345,8 @@ crew_rum:
 	
 check_pace:
 	# checks the pace and changes the distance based on that
-	beq 1, $s2, pace_slow
-	beq 2, $s2, pace_medium
+	beq $s2, 1 pace_slow
+	beq $s2, 2 pace_medium
 	addi $t1, $t1, 3
 	mult $a0, $t1 #multiply distance by 3 for grueling 
 	mflo $t0
@@ -379,7 +377,7 @@ check_island:
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
 	bge $s1, $t4, island_arrive #check is distance is equal to island location
-	j option_menu_sea
+	#j option_menu_sea
 
 island_arrive:
 	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array 
@@ -458,7 +456,8 @@ check_supplies:
 	li $v0, 4
 	syscall
 	
-	move $a0, $s0
+	lw $t7, 32($t0)
+	move $a0, $t7
 	li $v0, 1
 	syscall
 	
@@ -626,8 +625,10 @@ store_main_2:
 	# display current gold
 	la $a0, status_gold
 	syscall
-	
-	move $a0, $s0
+
+	la $t8, item_count
+	lw $t7, 32($t8)
+	move $a0, $t7
 	li $v0, 1
 	syscall
 	
@@ -806,13 +807,16 @@ store_spare_section:
 store_exit:
 	# if total bill is greater than current gold, give error
 	# otherwise return from function after adjusting values
-	bgt $t0, $s0, store_exit_error
-	sub $s0, $s0, $t0
+	bgt $t0, $t7, store_exit_error
+	sub $t7, $t7, $t0
 
 	# add store items to item_count
 	la $t0, item_count
 	la $t1, store_item_count
 	li $t9, 0
+
+	# store gold back into item_count
+	sw $t7, 32($t0)
 
 store_finish:
 	lw $t2, ($t0)
@@ -912,11 +916,90 @@ fish:
 fishing_exit:
 	jr $ra
 	
+# ********************************************
+# Checks to see if a crew member gets a disease
+# ********************************************
+contract_check:
+	# get random number between 1 and 100
+	# compare to stamina value
+	# if greater than stamina, one person will contract disease
+	# otherwise, crew stays healthy
+
+	# save $ra on stack
+	addi $sp, $sp, 4
+	sw $ra, 4($sp)
+
+	# get random number between 0 and 100
+	li $a0, 0
+	li $a1, 100
+	li $v0, 42
+	syscall
+
+	bgt $a0, $s0, contract_disease
+	jr $ra
+
+contract_disease:
+	# get random number to see which crew member gets the disease
+	li $a0, 0
+	li $a1, 6
+	li $v0, 42
+	syscall
+
+	move $t0, $a0
 	
-	
-	
-	
-	
-	
-	
+	la $a0, contract_disease_message
+	li $v0, 4
+	syscall
+
+	# display crew name
+	move $a0, $t0
+	jal get_crew_name
+	move $a0, $v0
+	li $v0, 4
+	syscall
+
+	# get index of array and change to 1
+	sll $t0, $t0, 4
+	la $t1, crew_health
+
+	add $t1, $t1, $t0
+	lw $t2, ($t1)
+	li $t2, 1
+	sw $t2, ($t1)
+
+	lw $ra, 4($sp)
+	addi $sp, $sp, -4
+	jr $ra
+
+# ********************************************
+# Given an index, returns the address of the crew name in $v0
+# $a0: index of crew member whose name will be returned
+# ********************************************
+get_crew_name:
+	beq $a0, 0, get_captain_name
+	beq $a0, 1, get_crew_1_name
+	beq $a0, 2, get_crew_2_name
+	beq $a0, 3, get_crew_3_name
+	beq $a0, 4, get_crew_4_name
+
+get_captain_name:
+	la $v0, name_captain
+	jr $ra
+
+get_crew_1_name:
+	la $v0, name_crew_1
+	jr $ra
+
+get_crew_2_name:
+	la $v0, name_crew_2
+	jr $ra
+
+get_crew_3_name:
+	la $v0, name_crew_3
+	jr $ra
+
+get_crew_4_name:
+	la $v0, name_crew_4
+	jr $ra
+
 	
