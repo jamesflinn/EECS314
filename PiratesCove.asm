@@ -122,6 +122,7 @@ rudder_buy_message:	.asciiz "How many rudders would you like to buy? "
 
 # Disease messages
 contract_disease_message:	.asciiz "A crew member has contracted scurvy! Their name is "
+captain_death_message:	.asciiz "Your captain has died! You cannot continue."
 death_message:		.asciiz "A crew member has died! RIP "
 cured_message:		.asciiz "A crew member has recovered! Good job "
 
@@ -147,15 +148,21 @@ fix_message:				.asciiz "You use a spare part to fix your ship!\n"
 no_fix_message:				.asciiz "You do not have the correct part to repair your ship! YOU LOSE!\n"
 
 # Storm messages
-storm_message:		.asczii "A storm has hit! \n"
-storm_hurricane_message:.asczii "It's a hurricane! \n"
+storm_message:		.asciiz "A storm has hit! \n"
+storm_hurricane_message:.asciiz "It's a hurricane! \n"
 storm_damage_message:	.asciiz "Your ship has been damaged in the storm! \n"
-storm_weathered:	.asciiz "You have weathered the storm safely! \n"
-storm_exit:		.asciiz "The sky clears... \n"
+storm_weathered_message:	.asciiz "You have weathered the storm safely! \n"
+storm_exit_message:		.asciiz "The sky clears... \n"
 
 # Seperates different menus
 menu_seperation:	.asciiz "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 new_line:			.asciiz "\n"
+
+# Winning messages 
+congrats:			.asciiz "Congratulations! You made it to Pirates Cove! \n"				
+happy_story: 		.asciiz "You dig around on the beach and find a treasure chest! \n"		
+treasure_chest:		.asciiz "          _,---.-.---------------.-.---,_\n     _.-'`====/o/=================\o\====`'-._\n   .'========/o/===================\o\========'.\n  |---------)~(---------------------)~(---------|\n   \________\o/________.---.________\o/________/\n    |=======/o\========) ? (========/o\=======|\n    |       | |       (  '  )       | |       |\n    |=======|o|========'---'========|o|=======|\n    |       | |         ____        | |       |\n    |=======|o|========)X| /(=======|o|=======|\n    |       | |       |XX|/ /|      | |       |\n    |=======|o|=======\--/ / /======|o|=======|\n    |       | |        '/_/.'       | |       |\n    |=======|o|=====================|o|=======|\n    '-------'-'---------------------'-'-------'\n"
+happy_print:		.asciiz "Inside the chest you find a banana. The end. \n"
 
 # crew members names
 name_captain:		.space 40
@@ -301,13 +308,43 @@ simulate_day_sea:
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
+	beq $s1, 4, check_win
+	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island
+	j continue_day_sea  
 
-	bgt $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island 
+check_win: 
+	bge $s1, $t4, happy_ending
 
+continue_day_sea:
 	#if island is not reached, continue 
 	jal crew_eat 
 	jal crew_rum 
+	jal contract_check
+	jal check_health
+
+	# simulate random events!
+	li $a0, 0
+	li $a1, 100
+	li $v0, 42
+	syscall
+
+	blt $a0, 2, call_skeleton_attack
+	blt $a0, 7, call_storm
+	blt $a0, 20, call_fishing
+
 	j simulate_day_sea 
+
+call_skeleton_attack:
+	jal skeleton_attack
+	j simulate_day_sea
+
+call_storm:
+	jal storm
+	j simulate_day_sea
+
+call_fishing:
+	jal fishing_spot
+	j simulate_day_sea
 
 simulate_day_island: 
 	# set the distance to the island distance
@@ -1399,6 +1436,9 @@ check_health_death:
 	move $a0, $t9
 	syscall
 
+	#check for captain death
+	beq $t1, 0, check_health_cap_death
+
 	# change health value to -1
 	li $t4, -1
 	sw $t4, ($t0)
@@ -1549,14 +1589,19 @@ skeleton_battle_death:
 	li $v0, 42
 	syscall
 
+	move $t0, $a0
+
 	# display crew members name who died
 	jal get_crew_name
 	move $a0, $v0
 	li $v0, 4
 	syscall
 
+	#check for captain death
+	beq $a1, 0, check_health_cap_death
+
 	# set crew member as dead in crew_health
-	sll $t0, $a0, 2
+	sll $t0, $t0, 2
 	la $t1, crew_health
 	add $t1, $t1, $t0
 	sw $zero, ($t1)
@@ -1564,6 +1609,13 @@ skeleton_battle_death:
 	sub $s7, $s7, 1
 
 	j skeleton_battle_exit
+
+check_health_cap_death:
+	la $a0, captain_death_message
+	li $v0, 4
+	syscall
+	
+	j GAME_OVER
 
 skeleton_battle_damage:
 	la $a0, skeleton_battle_damage_message
@@ -1805,6 +1857,23 @@ storm_sail_broken:
 	j storm_exit
 
 storm_exit:
+	la $a0, storm_exit_message
+	li $v0, 4
+	syscall
+
 	lw $ra, 4($sp)
 	addi $sp, $sp, -4
 	jr $ra
+
+happy_ending: 
+	li $v0, 4 #Print 
+	la $a0, congrats 
+	syscall 
+	la $a0, happy_story 
+	syscall 
+	la $a0, treasure_chest
+	syscall 
+	la $a0, happy_ending 
+	syscall 
+	li $v0, 10
+	syscall  
