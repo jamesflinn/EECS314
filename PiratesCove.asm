@@ -366,11 +366,18 @@ simulate_day_sea:
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
-	beq $s1, 4, check_win
+	beq $s1, 5, check_win
 	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island
 	j continue_day_sea  
 
 check_win: 
+	la $t3, island_array #checking the island array to find distance of next island location 
+	move $t4, $s3
+	addi $t1, $zero, 4
+	mult $t4, $t1
+	mflo $t4 
+	add $t3, $t3, $t4 
+	lw $t4, 0($t3)
 	bge $s1, $t4, happy_ending
 
 continue_day_sea:
@@ -1959,7 +1966,7 @@ happy_ending:
 	syscall 
 	la $a0, treasure_chest
 	syscall 
-	la $a0, happy_ending 
+	la $a0, happy_print 
 	syscall 
 	li $v0, 10
 	syscall  
