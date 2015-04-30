@@ -39,7 +39,7 @@ food_title:			.asciiz "Change food rations, currently "
 filling_option: 	.asciiz "1. filling: meals are large and generous\n"
 meager_option:		.asciiz "2. meager: meals are small, but adequate\n"
 bare_option:		.asciiz "3. bare bones: mealse are very small; everyone stays hungry \n"
-food_intro: 		.asciiz "The amounf of food the people in your crew eat each day can change. These amounts are:\n"
+food_intro: 		.asciiz "The amount of food the people in your crew eat each day can change. These amounts are:\n"
 
 #pace menu 
 pace_intro: 		.asciiz "Select your pace, current pace is: "
@@ -493,9 +493,9 @@ pace_medium:
 	jr $ra
 
 crew_eat:
-	beq $s6, 1, crew_barebones
+	beq $s6, 1, crew_filling
 	beq $s6, 2, crew_meager
-	beq $s6, 3, crew_filling
+	beq $s6, 3, crew_barebones
 
 crew_meager: 
 	addi $t1, $zero, 2 
@@ -1430,8 +1430,8 @@ contract_disease:
 
 	#check for already dead character
 	la $t1, crew_health	#pull crew health array address
-	sll $t0, $t0, 2		#get the offset for the correct array location
-	add $t1, $t1, $t0	#get the array location in question (add offset)
+	sll $t3, $t0, 2		#get the offset for the correct array location
+	add $t1, $t1, $t3	#get the array location in question (add offset)
 	lw $t2, ($t1)		#pull the value stored
 	beq $t2, -1, contract_disease
 	beq $t2, 1, contract_return		# check if crew member is already sick
@@ -1448,7 +1448,7 @@ contract_disease:
 	syscall
 
 	# get index of array and change to 1
-	sll $t0, $t0, 4
+	sll $t0, $t0, 2
 	la $t1, crew_health
 
 	add $t1, $t1, $t0
@@ -1501,14 +1501,14 @@ check_health_sick:
 check_health_death:
 	#check for death of already dead character
 	la $t4, crew_health	#pull crew health array address
-	sll $t3, $t3, 2		#get the offset for the correct array location
-	add $t4, $t4, $t3	#get the array location in question (add offset)
+	sll $t6, $t3, 2		#get the offset for the correct array location
+	add $t4, $t4, $t6	#get the array location in question (add offset)
 	lw $t5, ($t4)		#pull the value stored
 	beq $t5, -1, check_health_exit
 
 	sub $s7, $s7, 1
 	# display death message
-	move $a0, $t1
+	move $a0, $t3
 	jal get_crew_name
 
 	move $t9, $v0
@@ -1521,7 +1521,7 @@ check_health_death:
 	syscall
 
 	#check for captain death
-	beq $t1, 0, check_health_cap_death
+	beq $t3, 0, check_health_cap_death
 
 	# change health value to -1
 	li $t4, -1
@@ -1678,8 +1678,8 @@ skeleton_battle_death_2:
 
 	#check for death of already dead character
 	la $t1, crew_health
-	sll $t0, $t0, 2
-	add $t1, $t1, $t0
+	sll $t3, $t0, 2
+	add $t1, $t1, $t3
 	lw $t2, ($t1)
 	beq $t2, -1, skeleton_battle_death_2
 
@@ -1690,7 +1690,7 @@ skeleton_battle_death_2:
 	syscall
 
 	#check for captain death
-	beq $a1, 0, check_health_cap_death
+	beq $t0, 0, check_health_cap_death
 
 	# set crew member as dead in crew_health
 	sll $t0, $t0, 2
