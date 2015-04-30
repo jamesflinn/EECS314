@@ -328,12 +328,6 @@ add_distance:
 	li $v0, 42
 	syscall
 
-	li $v0, 1 
-	syscall 
-	
-	la, $a0, new_line
-	li $v0, 4
-	syscall 
 	addi $a0, $a0, 1 #ensures that the randomly generated number is 1 -10 
 
 check_pace:
