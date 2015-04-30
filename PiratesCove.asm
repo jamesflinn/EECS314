@@ -1,12 +1,14 @@
 	.data
 #island messages 
 island_approach:	.asciiz "You are approaching \n" 
-island_reached: 	.asciiz "You are on island \n" 
+island_reached: 	.asciiz "You are on island " 
 island_depart:		.asciiz "You have departed the island \n"
 
 #print mesages
 print_distance: 	.asciiz "You have traveled: \t"
 print_day:			.asciiz "You are on day: \t"
+print_next_distance:	.asciiz "Distance to next island: \t"
+print_input_error:	.asciiz "Must enter number between 1 and 3.\n"
 
 #option menu for island
 island_optshop:		.asciiz "1. Shop at local market \n"
@@ -15,7 +17,7 @@ island_optcheck:	.asciiz "3. Check Supplies \n"
 island_optpace:		.asciiz "4. Change Pace\n"
 island_optrations: 	.asciiz "5. Change Food Rations \n"
 island_optdist: 	.asciiz "6. Distance Traveled \n"
-island_optenter: 	.asciiz "Enter Option: \n"
+island_optenter: 	.asciiz "Enter Option: "
 
 #weather options
 sea_cond1:			.asciiz "calm\n"
@@ -23,18 +25,14 @@ sea_cond2: 			.asciiz "stormy\n"
 sea_cond3:			.asciiz "hurricane!\n"
 
 #food rations options
-food_title:			.asciiz "Change food rations\n"
-food_current_start:	.asciiz "(currently \""
-filling:			.asciiz "filling\")\n"
-meager:				.asciiz "meager\")\n"
-barebones:			.asciiz "bare bones\")\n"
+food_title:			.asciiz "Change food rations, currently "
 filling_option: 	.asciiz "1. filling: meals are large and generous\n"
 meager_option:		.asciiz "2. meager: meals are small, but adequate\n"
 bare_option:		.asciiz "3. bare bones: mealse are very small; everyone stays hungry \n"
 food_intro: 		.asciiz "The amounf of food the people in your crew eat each day can change. These amounts are:\n"
 
 #pace menu 
-pace_intro: 		.asciiz "Select your pace"
+pace_intro: 		.asciiz "Select your pace, current pace is: "
 pace_steady:		.asciiz "1. Steady - You travel about 8 hours a day, taking frequent rests. \n"
 pace_strenuous:		.asciiz "2. Strenuous - You travelabout 12 hours a day, starting just after sunrise and stoping shortly before sunset. \n You take care not to get too tired.\n You stop to rest only when necessary. You finish each day feeling very tired \n"
 pace_grueling:		.asciiz "3. Grueling- You travel about 16 hourse a day, starting before sunrise and continueing until dark. \n You almost never stop to rest. You do not get enough sleep at night. You finish each day feeling exhausted, and your health suffers. \n"
@@ -62,10 +60,11 @@ four:				.asciiz "4: "
 
 # Options menu
 options_supplies:	.asciiz "1. Check supplies\n"
-options_distance:	.asciiz "2. Check distance to next destination\n"
+options_distance:	.asciiz "2. Check distance traveled\n"
 options_pace:		.asciiz "3. Change pace\n"
 options_food:		.asciiz "4. Change food rations\n"
 options_continue: 	.asciiz "5. Continue on journey\n"
+options_next_distance:	.asciiz "6. Check distance to next island\n"
 
 # Options menu for start
 options_start:		.asciiz "1. Start on your voyage\n"
@@ -207,6 +206,10 @@ main:
 	li $s1, 0
 	li $s5, 0
 
+	# initialize pace and rations
+	li $s2, 1
+	li $s4, 1
+
 	# display intro message to screen
 	la $a0, intro_message
 	li $v0, 4
@@ -276,6 +279,7 @@ main:
 simulate_day_sea:
 
 	jal increment_day
+	jal calculate_stamina 
 	jal option_menu_sea_func
 	jal add_distance
 
@@ -288,18 +292,6 @@ simulate_day_sea:
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
 
-	li $v0, 1
-	add $a0, $t4, $zero #prints out location of island
-	syscall 
-
-	li $v0, 4
-	la $a0, new_line
-	syscall 
-	
-	li $v0, 1
-	add $a0, $s1, $zero 
-	syscall 
-
 	bgt $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island 
 
 	#if island is not reached, continue 
@@ -308,9 +300,25 @@ simulate_day_sea:
 	j simulate_day_sea 
 
 simulate_day_island: 
+	# set the distance to the island distance
+	move $s0, $t4
+
+	li $v0, 4
+	la $a0, menu_seperation
+	syscall
+
 	li $v0, 4	
 	la $a0, island_reached # message output for reaching an island 
-	syscall 
+	syscall
+
+	li $v0, 1
+	move $a0, $s3
+	addi $a0, $a0, 1
+	syscall
+
+	li $v0, 4
+	la $a0, new_line
+	syscall
 
 	jal increment_day 
 	jal option_menu_island_func
@@ -333,9 +341,6 @@ increment_day:
 
 	li $v0, 4 #Print a new line 
 	la $a0, new_line
-	syscall 
-
-	la $a0, menu_seperation
 	syscall 
 
 	jr $ra
@@ -468,6 +473,9 @@ option_menu_sea:
 	la $a0, options_continue
 	syscall 
 
+	la $a0, options_next_distance
+	syscall
+
 	li $v0, 4
 	la $a0, island_optenter
 	syscall 
@@ -482,6 +490,7 @@ option_menu_sea:
 	beq  $t1, 3, call_change_pace_sea
 	beq $t1, 4, call_change_rations_sea
 	beq $t1, 5, call_continue_sea 
+	beq $t1, 6, call_next_island_sea
 
 call_continue_sea:
 	lw $ra, 4($sp)
@@ -567,7 +576,15 @@ call_change_rations_sea:
 	jal change_rations
 	j option_menu_sea  
 
+call_next_island_sea:
+	jal next_island_check
+	j option_menu_sea
+
 call_distance_traveled:
+	li $v0, 4
+	la $a0, menu_seperation
+	syscall
+
 	li $v0, 4
 	la $a0, print_distance 
 	syscall 
@@ -582,6 +599,10 @@ call_distance_traveled:
 	j option_menu_island
 call_distance_traveled_sea:
 	li $v0, 4
+	la $a0, menu_seperation
+	syscall
+
+	li $v0, 4
 	la $a0, print_distance 
 	syscall 
 	li $v0, 1
@@ -593,21 +614,26 @@ call_distance_traveled_sea:
 	syscall
 
 	j option_menu_sea
+
 change_rations:
+	li $v0, 4
+	la $a0, menu_seperation
+	syscall
+
 	li $v0, 4
 	la $a0, food_title 
 	syscall 
 
-	li $v0, 4
-	la $a0, food_intro
-	syscall 
-
-	li $v0, 4
-	la $a0, food_current_start 
-	syscall 
-
 	li $v0, 1
 	move $a0, $s6 #current food ration value 
+	syscall 
+
+	li $v0, 4
+	la $a0, new_line
+	syscall
+
+	li $v0, 4
+	la $a0, food_intro
 	syscall 
 
 	li $v0, 4
@@ -629,13 +655,35 @@ change_rations:
 	li $v0, 5
 	syscall 
 
+	bgt $v0, 3, input_error_food
+
 	move $s6, $v0 #store new value in reg
 	jr $ra 
+
+input_error_food:
+	la $a0, print_input_error
+	li $v0, 4
+	syscall
+	j change_rations
+
 change_pace:
+
+	li $v0, 4
+	la $a0, menu_seperation
+	syscall
 
 	li $v0, 4
 	la $a0, pace_intro 
 	syscall 
+
+	li $v0, 1
+	move $a0, $s2
+	syscall
+
+	li $v0, 4
+	la $a0, new_line
+	syscall
+
 	li $v0, 4
 	la $a0, pace_steady  #description for steady pace
 	syscall 
@@ -649,8 +697,16 @@ change_pace:
 	li $v0, 5
 	syscall 
 
+	bgt $v0, 3, input_error_pace
+
 	move $s2, $v0 #load the input into the s2 register 
 	jr $ra 
+
+input_error_pace:
+	la $a0, print_input_error
+	li $v0, 4
+	syscall
+	j change_pace
 
 leave_island:
 	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array
@@ -658,6 +714,80 @@ leave_island:
 	addi $sp, $sp, -4 
 	jr $ra
 
+
+next_island_check:
+	la $t3, island_array #checking the island array to find distance of next island location 
+	move $t4, $s3
+	addi $t1, $zero, 4
+	mult $t4, $t1
+	mflo $t4 
+	add $t3, $t3, $t4 
+	lw $t4, 0($t3)
+
+	sub $t0, $t4, $s1
+
+	la $a0, menu_seperation
+	li $v0, 4
+	syscall
+
+	la $a0, print_next_distance
+	li $v0, 4
+	syscall
+
+	move $a0, $t0
+	li $v0, 1
+	syscall
+
+	la $a0, new_line
+	li $v0, 4
+	syscall
+	jr $ra
+
+#The stamina can be anywhere from 20 to 120 
+#The stamina is affected by the amount of clothes, a hook, pace, and rations 
+calculate_stamina: 
+	li $s0, 0 #set s0 (stamina register) to 0 
+	li $t0, 4 #store t0 
+	la $t1, item_count #t0 stores the address of the
+	addi $t2, $t1, 12 #The address of clothes 
+	addi $t3, $t1, 20 #The address of hook  
+	lw $t4, 0($t2) #Stores the number of clothes 
+	lw $t5, 0($t2) #Stoers the number of hooks 
+stamina_hook:
+	blt $t5, 1, stamina_clothes
+	addi $s0, $s0, 20 #Add 20 to stamina for hook, number of hooks does not matter 
+stamina_clothes:
+	blt $t4, 1 stamina_pace 
+	bgt $t4, 9 stamina_clothes_max #Clothes only matter up to 10 sets of clothes 
+	mult $t4, $t0 #Multiply the number of clothes by 4 
+	mflo $t6 
+	add $s0, $s0, $t6 #add 4x #ofclthes to to stamina 
+	j stamina_pace 
+stamina_clothes_max: 
+	addi $s0, $s0, 40 #add 40 to the stamina  
+#add 20 to stamina for steady, 10 for strenuous, and nothing for grueling
+stamina_pace: 
+	beq $s2, 1, stamina_pace_1
+	beq $s2, 2, stamina_pace_2
+	j stamina_rations
+stamina_pace_1: 
+	addi $s0, $s0, 20 #add 30 to stamina if pace is 1 
+	j stamina_rations 
+stamina_pace_2:
+	addi $s0, $s0, 10 #add 20 to stamina if pace is 2 
+	j_stamina_rations
+#add 20 to stamina for filling, 10 for meager, nothing for barebones 
+stamina_rations: 	
+	beq $s2, 1, stamina_rations_1
+	beq $s2, 2, stamina_rations_2
+	j return 
+stamina_rations_1:
+	addi $s0, $s0, 20 
+	j return 
+stamina_rations_2:
+	addi $s0, $s0, 10 
+return: 
+	jr $ra 
 
 # ********************************************
 # Prints out the distance traveled
@@ -681,6 +811,10 @@ check_dist:
 # ********************************************
 check_supplies:
 	la $t0, item_count
+
+	la $a0, menu_seperation
+	li $v0, 4
+	syscall
 	
 	# print fish info
 	la $a0, status_gold
@@ -1489,6 +1623,8 @@ skeleton_battle_exit:
 	jr $ra
 
 GAME_OVER:
+	
+
 	li $v0, 10
 	syscall
 
