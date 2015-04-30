@@ -1,4 +1,5 @@
 	.data
+
 #island messages 
 island_approach:	.asciiz "You are approaching \n" 
 island_reached: 	.asciiz "You are on island " 
@@ -26,6 +27,7 @@ recommendations_clothes:.asciiz	"We recommend you buy 2 sets of clothes for each
 recommendations_hooks:	.asciiz "We recommend you buy 1 hook for yourself \n"
 recommendations_ship_parts:	.asciiz "We recommend you buy 2 spares for each ship part \n"
 recommendations_balls:	.asciiz "We recommend you buy 50 cannonballs\n"
+reccomendations_continue:	.asciiz"Press enter to continue to the store:"
 
 #weather options
 sea_cond1:			.asciiz "calm\n"
@@ -58,6 +60,7 @@ fish_total: 		.asciiz "You have caught "
 fish_totalcont:		.asciiz " fish\n"
 
 # Messages used at the start of the game
+welcome_message:	.asciiz "					***** PIRATE'S COVE *****					\n"
 intro_message:		.asciiz "The goal of this game is for the captain to make it to the treasure. You will have to survive starvation, mutiny, scurvy, enemies.\n"
 input_captain_name: .asciiz "Enter the captain's name: "
 input_crew_message: .asciiz "Enter crew members names\n"
@@ -241,6 +244,14 @@ main:
 	syscall 
 	syscall
 	syscall 
+	#display game title
+	li $v0, 4
+	la $a0, welcome_message
+	syscall
+
+	li $v0, 4
+	la $a0, new_line
+	syscall 
 	# display intro message to screen
 	la $a0, intro_message
 	li $v0, 4
@@ -304,32 +315,42 @@ main:
 	li $a1, 40		# maximum number of characters
 	li $v0, 8
 	syscall
-	
-	li $v0, 4 
 
-	la $a0, recommendations_title
-	syscall 
-
-	la $a0, recommendations_fish
-	syscall 
-
-	la $a0, recommendations_rum
-	syscall 
-
-	la $a0, recommendations_clothes 
-	syscall 
-
-	la $a0, recommendations_hooks 
-	syscall 
-
-	la $a0, recommendations_balls
-	syscall 
-
-	la $a0, recommendations_ship_parts
+	li $v0, 4
+	la $a0, new_line
 	syscall
 
-	jal store
+	jal rec_menu
 
+
+rec_menu: #displays reccomendations for purchases
+	li $v0, 4
+	la $a0, recommendations_title
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_fish
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_rum
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_clothes 
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_hooks 
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_balls
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_ship_parts
+	syscall
+	li $v0, 4
+	la $a0, reccomendations_continue
+	syscall 
+	li $v0, 8
+	syscall 
+	jal store
 simulate_day_sea:
 
 	jal increment_day
