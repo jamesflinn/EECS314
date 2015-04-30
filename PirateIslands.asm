@@ -258,13 +258,13 @@ main:
 simulate_day_sea:
 
 	jal increment_day
-	jal option_menu_sea
+	jal option_menu_sea_func
 	jal add_distance
 
 	# check if next island is reached
 	la $t3, island_array #checking the island array to find distance of next island location 
-	add $t4, $s3, $zero 
-	addi $t1, $t1, 4
+	move $t4, $s3
+	addi $t1, $zero, 4
 	mult $t4, $t1
 	mflo $t4 
 	add $t3, $t3, $t4 
@@ -295,9 +295,10 @@ simulate_day_island:
 	syscall 
 
 	jal increment_day 
-	jal option_menu_island
+	jal option_menu_island_func
 	jal crew_eat 
 	jal crew_rum 
+	j simulate_day_sea
 
 increment_day: 
 	addi $s5, $s5, 1 #increment the day
@@ -424,7 +425,12 @@ crew_rum:
 	jr $ra 
 
 # TODO: add code to get random events, decrement food, recalculate health
+option_menu_sea_func:
+	addi $sp, $sp, 4 
+	sw $ra, 4($sp)
+
 option_menu_sea: 
+
 	li $v0, 4 
 	la $a0, menu_seperation 
 	syscall 
@@ -460,7 +466,13 @@ option_menu_sea:
 	beq $t1, 5, call_continue_sea 
 
 call_continue_sea:
+	lw $ra, 4($sp)
+	addi $sp, $sp, -4 
 	jr $ra 
+
+option_menu_island_func:
+	addi $sp, $sp, 4 
+	sw $ra, 4($sp)
 
 option_menu_island: 
 	li $v0, 4
@@ -505,30 +517,38 @@ option_menu_island:
 	beq $t4, 3, call_check_supplies 
 	beq $t4, 5, call_change_rations
 	beq $t4, 6, call_distance_traveled
+
 call_store_island:
 	jal store 
 	j option_menu_island
+
 call_leave_island:
-	jal leave_island
-	j option_menu_island
+	j leave_island
+
 call_check_supplies:
 	jal check_supplies 
 	j option_menu_island
+
 call_check_supplies_sea:
 	jal check_supplies
 	j option_menu_sea
+
 call_change_pace:
 	jal change_pace 
 	j option_menu_island
+
 call_change_pace_sea:
 	jal change_pace 
 	j option_menu_sea
+
 call_change_rations:
 	jal change_rations
 	j option_menu_island
+
 call_change_rations_sea:
 	jal change_rations
 	j option_menu_sea  
+
 call_distance_traveled:
 	li $v0, 4
 	la $a0, print_distance 
@@ -615,8 +635,10 @@ change_pace:
 	jr $ra 
 
 leave_island:
-	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array 
-	j simulate_day_sea
+	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array
+	lw $ra, 4($sp)
+	addi $sp, $sp, -4 
+	jr $ra
 
 
 # ********************************************
