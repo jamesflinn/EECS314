@@ -34,10 +34,10 @@ bare_option:		.asciiz "3. bare bones: mealse are very small; everyone stays hung
 food_intro: 		.asciiz "The amounf of food the people in your crew eat each day can change. These amounts are:\n"
 
 #pace menu 
-pace_intro: 		.asciiz "Select your pace \n"
+pace_intro: 		.asciiz "Select your pace"
 pace_steady:		.asciiz "1. Steady - You travel about 8 hours a day, taking frequent rests. \n"
 pace_strenuous:		.asciiz "2. Strenuous - You travelabout 12 hours a day, starting just after sunrise and stoping shortly before sunset. \n You take care not to get too tired.\n You stop to rest only when necessary. You finish each day feeling very tired \n"
-pace_grueling:		.asciiz "3. Grueling- You travel about 16 hourse a day, starting before sunrise and continueing until dark. \n You almost never stop to rest. You do not get enough sleep at night. You finish each day feeling exhausted, and your helath suffers. \n"
+pace_grueling:		.asciiz "3. Grueling- You travel about 16 hourse a day, starting before sunrise and continueing until dark. \n You almost never stop to rest. You do not get enough sleep at night. You finish each day feeling exhausted, and your health suffers. \n"
 
 # Fishing menu
 fish_message:		.asciiz "Your ship has arrived at a fishing spot.\n"
@@ -60,16 +60,15 @@ two:				.asciiz "2: "
 three:				.asciiz "3: "
 four:				.asciiz "4: "
 
-# Start options 
-start_journey: 		.asciiz "Would you like to start your journey (y/n)? "
 # Options menu
 options_supplies:	.asciiz "1. Check supplies\n"
 options_distance:	.asciiz "2. Check distance to next destination\n"
 options_pace:		.asciiz "3. Change pace\n"
 options_food:		.asciiz "4. Change food rations\n"
 options_continue: 	.asciiz "5. Continue on journey\n"
+
 # Options menu for start
-options_start:			.asciiz "1. Start on your voyage\n"
+options_start:		.asciiz "1. Start on your voyage\n"
 options_get_supplies:	.asciiz "2. Buy supplies\n"
 
 # Status
@@ -127,6 +126,27 @@ contract_disease_message:	.asciiz "A crew member has contracted scurvy! Their na
 death_message:		.asciiz "A crew member has died! RIP "
 cured_message:		.asciiz "A crew member has recovered! Good job "
 
+# Skeleton attack messages
+skeleton_attack_message:	.asciiz "You have been attacked by skeletons!\n"
+skeleton_option_1:			.asciiz "1. Use cannons to fight back!\n"
+skeleton_option_2:			.asciiz "2. Attempt to escape!\n"
+skeleton_decision:			.asciiz "What would you like to do?"
+skeleton_no_ammo:			.asciiz "You are out of ammo!\n"
+skeleton_victory:			.asciiz "You have successfully fought off the skeletons!\n"
+skeleton_death:				.asciiz "You have fought off the skeletons, but a crew member has died. RIP "
+skeleton_defeat:			.asciiz "The skeletons have proved to be too much and took over your ship. GAME OVER\n"
+skeleton_run_success:		.asciiz "You have successfully ran away from the skeletons!\n"
+skeleton_run_defeat:		.asciiz "The skeletons have caught up to you!"
+skeleton_battle_damage_message: 	.asciiz "You have fought off the skeletons, but your ship has taken damage!\n"
+
+
+# Ship damage messages
+mast_damage:				.asciiz "Your mast has been damaged!\n"
+sail_damage:				.asciiz "Your sail has been damaged!\n"
+rudder_damage:				.asciiz "Your rutter has been damaged!\n"
+fix_message:				.asciiz "You use a spare part to fix your ship!\n"
+no_fix_message:				.asciiz "You do not have the correct part to repair your ship! YOU LOSE!\n"
+
 # Seperates different menus
 menu_seperation:	.asciiz "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 new_line:			.asciiz "\n"
@@ -152,6 +172,9 @@ island_array: 		.word 100, 300, 450, 700, 800, 1000
 
 # health of each crew members
 crew_health:		.word 0, 0, 0, 0, 0
+# health of the boat, 0 means not broken, one means broken
+# contains in order: mast, sail, rudder
+ship_health:		.word 0, 0, 0
 
 	.text
 # ********************************************
@@ -180,11 +203,9 @@ main:
 	li $a0, 0
 	syscall 
 
-	# initialize day, number of crew, distance, and next island to 0, 5, 0, 0 respectively 
+	# initialize day and distance to 0
 	li $s1, 0
 	li $s5, 0
-	li $s7, 5
-	li $s3, 0
 
 	# display intro message to screen
 	la $a0, intro_message
@@ -252,12 +273,9 @@ main:
 	
 	jal store
 
-
-	#jal simulate_day_island because we start on island 1 
-
-simulate_day_sea:
-
+simulate_day_sea: 
 	jal increment_day
+	jal calculate_stamina 
 	jal option_menu_sea_func
 	jal add_distance
 
@@ -299,6 +317,52 @@ simulate_day_island:
 	jal crew_eat 
 	jal crew_rum 
 	j simulate_day_sea
+
+#The stamina can be anywhere from 20 to 120 
+#The stamina is affected by the amount of clothes, a hook, pace, and rations 
+calculate_stamina: 
+	li $s0, 0 #set s0 (stamina register) to 0 
+	li $t0, 4 #store t0 
+	la $t1, item_count #t0 stores the address of the
+	addi $t2, $t1, 12 #The address of clothes 
+	addi $t3, $t1, 20 #The address of hook  
+	lw $t4, 0($t2) #Stores the number of clothes 
+	lw $t5, 0($t2) #Stoers the number of hooks 
+stamina_hook:
+	blt $t5, 1, stamina_clothes
+	addi $s0, $s0, 20 #Add 20 to stamina for hook, number of hooks does not matter 
+stamina_clothes:
+	blt $t4, 1 stamina_pace 
+	bgt $t4, 9 stamina_clothes_max #Clothes only matter up to 10 sets of clothes 
+	mult $t4, $t0 #Multiply the number of clothes by 4 
+	mflo $t6 
+	add $s0, $s0, $t6 #add 4x #ofclthes to to stamina 
+	j stamina_pace 
+stamina_clothes_max: 
+	addi $s0, $s0, 40 #add 40 to the stamina  
+#add 20 to stamina for steady, 10 for strenuous, and nothing for grueling
+stamina_pace: 
+	beq $s2, 1, stamina_pace_1
+	beq $s2, 2, stamina_pace_2
+	j stamina_rations
+stamina_pace_1: 
+	addi $s0, $s0, 20 #add 30 to stamina if pace is 1 
+	j stamina_rations 
+stamina_pace_2:
+	addi $s0, $s0, 10 #add 20 to stamina if pace is 2 
+	j_stamina_rations
+#add 20 to stamina for filling, 10 for meager, nothing for barebones 
+stamina_rations: 	
+	beq $s2, 1, stamina_rations_1
+	beq $s2, 2, stamina_rations_2
+	j return 
+stamina_rations_1:
+	addi $s0, $s0, 20 
+	j return 
+stamina_rations_2:
+	addi $s0, $s0, 10 
+return: 
+	jr $ra 
 
 increment_day: 
 	addi $s5, $s5, 1 #increment the day
@@ -1222,6 +1286,7 @@ check_health_sick:
 	j check_health_member_2
 
 check_health_death:
+	sub $s7, $s7, 1
 	# display death message
 	move $a0, $t1
 	jal get_crew_name
@@ -1295,8 +1360,252 @@ get_crew_4_name:
 	la $v0, name_crew_4
 	jr $ra
 
+# ********************************************
+# SKELETON ATTACK!
+# ********************************************
+skeleton_attack:
+	# save $ra on stack
+	addi $sp, $sp, 4
+	sw $ra, 4($sp)
+
+	la $a0, menu_seperation
+	li $v0, 4
+	syscall
+
+	# display message
+	la $a0, skeleton_attack_message
+	syscall
+
+	la $a0, skeleton_option_1
+	syscall
+
+	la $a0, skeleton_option_2
+	syscall
+
+	la $a0, skeleton_decision
+	syscall
+
+	li $v0, 5
+	syscall
+
+	beq $v0, 1, skeleton_battle
+	beq $v0, 2, skeleton_run
+	j skeleton_run
+
+skeleton_battle:
+	la $t0, item_count
+	lw $t1, 12($t0)
+
+	ble $t1, 0, skeleton_out_of_ammo
+
+	# pick a random number for number of cannon balls used
+	li $a0, 0
+	li $a1, 20
+	li $v0, 42
+	syscall
+
+	# subtract the number of cannon balls used
+	blt $t1, $a0, skeleton_battle_cannons_less
+	sub $t1, $t1, $a0
+	j skeleton_battle_2
+
+skeleton_battle_cannons_less:
+	li $t1, 0
+
+skeleton_battle_2:
+	sw $t1, 12($t0)
+	# 5% a crew member dies
+	# 15% something gets damaged
+	li $a0, 0
+	li $a1, 100
+	li $v0, 42
+	syscall
+
+	blt $a0, 1, skeleton_battle_lost
+	blt $a0, 6, skeleton_battle_death
+	blt $a0, 21, skeleton_battle_damage
+
+	# skeleton battle is won
+	la $a0, skeleton_victory
+	li $v0, 4
+	syscall
+
+	j skeleton_battle_exit
+
+skeleton_battle_lost:
+	la $a0, skeleton_defeat
+	li $v0, 4
+	syscall
+
+	j GAME_OVER
+
+skeleton_battle_death:
+	la $a0, skeleton_death
+	li $v0, 4
+	syscall
+
+	# randomly pick number who dies
+	li $a0, 0
+	li $a1, 5
+	li $v0, 42
+	syscall
+
+	# display crew members name who died
+	jal get_crew_name
+	move $a0, $v0
+	li $v0, 4
+	syscall
+
+	# set crew member as dead in crew_health
+	sll $t0, $a0, 2
+	la $t1, crew_health
+	add $t1, $t1, $t0
+	sw $zero, ($t1)
+
+	sub $s7, $s7, 1
+
+	j skeleton_battle_exit
+
+skeleton_battle_damage:
+	la $a0, skeleton_battle_damage_message
+	li $v0, 4
+	syscall
+
+	# pick a random ship part to break
+	li $a0, 0
+	li $a1, 3
+	li $v0, 42
+
+	# get the address of the ship part
+	la $t0, ship_health
+	sll $t1, $a0, 2
+	add $t0, $t0, $t1
+
+	# set to broken
+	li $t1, 1
+	sw $t1, ($t0)
+
+	# handle broken ship parts
+	beq $a0, 0, skeleton_battle_mast_broken
+	beq $a0, 1, skeleton_battle_sail_broken
+	jal rudder_broken
+	j skeleton_battle_exit
+
+skeleton_battle_mast_broken:
+	jal mast_broken
+	j skeleton_battle_exit
+
+skeleton_battle_sail_broken:
+	jal sail_broken
+	j skeleton_battle_exit
+
+skeleton_out_of_ammo:
+	# jumps back to the menu if user has no ammo
+	la $a0, skeleton_no_ammo
+	li $v0, 4
+	syscall
+	j skeleton_attack
+
+skeleton_run:
+	li $a0, 0
+	li $a1, 100
+	li $v0, 42
+	syscall
+
+	move $t0, $a0
+
+	bge $a0, 50, skeleton_run_2
+
+	la $a0, skeleton_run_defeat
+	li $v0, 4
+	syscall
+
+	blt $t0, 3, skeleton_battle_lost
+	blt $t0, 16, skeleton_battle_death
+	j skeleton_battle_damage
+
+skeleton_run_2:
+	la $a0, skeleton_run_success
+	li $v0, 4
+	syscall
+
+skeleton_battle_exit:
+	lw $ra, 4($sp)
+	addi $sp, $sp, -4
+	jr $ra
+
 GAME_OVER:
 	li $v0, 10
 	syscall
 
+# ********************************************
+# This function is called if the mast is broken
+# ********************************************
+mast_broken:
+	la $a0, mast_damage
+	li $v0, 4
+	syscall
+
+	# check if spare part is avaialbe
+	la $t0, item_count
+	lw $t1, 20($t0)
+	beq $t1, 0, no_spare_part
+
+	sub $t1, $t1, 1
+	sw $t1, 20($t0)
+
+	la $a0, fix_message
+	li $v0, 4
+	syscall
+	jr $ra
 	
+# ********************************************
+# This function is called if the sail is broken
+# ********************************************
+sail_broken:
+	la $a0, sail_damage
+	li $v0, 4
+	syscall
+
+	# check if spare part is avaialbe
+	la $t0, item_count
+	lw $t1, 24($t0)
+	beq $t1, 0, no_spare_part
+
+	sub $t1, $t1, 1
+	sw $t1, 24($t0)
+
+	la $a0, fix_message
+	li $v0, 4
+	syscall
+	jr $ra
+
+# ********************************************
+# This function is called if the rudder is broken
+# ********************************************
+rudder_broken:
+	la $a0, rudder_damage
+	li $v0, 4
+	syscall
+
+	# check if spare part is avaialbe
+	la $t0, item_count
+	lw $t1, 28($t0)
+	beq $t1, 0, no_spare_part
+
+	sub $t1, $t1, 1
+	sw $t1, 28($t0)
+
+	la $a0, fix_message
+	li $v0, 4
+	syscall
+	jr $ra
+
+# ********************************************
+# Called if a spare part is not available, end game
+# ********************************************
+no_spare_part:
+	la $a0, no_fix_message
+	li $v0, 4
+	syscall
+	j GAME_OVER
