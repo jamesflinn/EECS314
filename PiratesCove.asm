@@ -1354,11 +1354,19 @@ contract_check:
 contract_disease:
 	# get random number to see which crew member gets the disease
 	li $a0, 0
-	li $a1, 6
+	li $a1, 5
 	li $v0, 42
 	syscall
 
 	move $t0, $a0
+
+	#check for already dead character
+	la $t1, crew_health	#pull crew health array address
+	sll $t0, $t0, 2		#get the offset for the correct array location
+	add $t1, $t1, $t0	#get the array location in question (add offset)
+	lw $t2, ($t1)		#pull the value stored
+	beq $t2, -1, contract_disease
+	beq $t2, 1, contract_return		# check if crew member is already sick
 	
 	la $a0, contract_disease_message
 	li $v0, 4
@@ -1380,6 +1388,7 @@ contract_disease:
 	li $t2, 1
 	sw $t2, ($t1)
 
+contract_return:
 	lw $ra, 4($sp)
 	addi $sp, $sp, -4
 	jr $ra
@@ -1422,6 +1431,13 @@ check_health_sick:
 	j check_health_member_2
 
 check_health_death:
+	#check for death of already dead character
+	la $t4, crew_health	#pull crew health array address
+	sll $t3, $t3, 2		#get the offset for the correct array location
+	add $t4, $t4, $t3	#get the array location in question (add offset)
+	lw $t5, ($t4)		#pull the value stored
+	beq $t5, -1, sick_deadman
+
 	sub $s7, $s7, 1
 	# display death message
 	move $a0, $t1
@@ -1583,6 +1599,7 @@ skeleton_battle_death:
 	li $v0, 4
 	syscall
 
+skeleton_battle_death_2:
 	# randomly pick number who dies
 	li $a0, 0
 	li $a1, 5
@@ -1590,6 +1607,13 @@ skeleton_battle_death:
 	syscall
 
 	move $t0, $a0
+
+	#check for death of already dead character
+	la $t1, crew_health
+	sll $t0, $t0, 2
+	add $t1, $t1, $t0
+	lw $t2, ($t1)
+	beq $t2, -1, skeleton_battle_death_2
 
 	# display crew members name who died
 	jal get_crew_name
@@ -1604,7 +1628,8 @@ skeleton_battle_death:
 	sll $t0, $t0, 2
 	la $t1, crew_health
 	add $t1, $t1, $t0
-	sw $zero, ($t1)
+	li $t3, -1
+	sw $t3, ($t1)
 
 	sub $s7, $s7, 1
 
