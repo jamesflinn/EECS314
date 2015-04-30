@@ -146,6 +146,13 @@ rudder_damage:				.asciiz "Your rutter has been damaged!\n"
 fix_message:				.asciiz "You use a spare part to fix your ship!\n"
 no_fix_message:				.asciiz "You do not have the correct part to repair your ship! YOU LOSE!\n"
 
+# Storm messages
+storm_message:		.asczii "A storm has hit! \n"
+storm_hurricane_message:.asczii "It's a hurricane! \n"
+storm_damage_message:	.asciiz "Your ship has been damaged in the storm! \n"
+storm_weathered:	.asciiz "You have weathered the storm safely! \n"
+storm_exit:		.asciiz "The sky clears... \n"
+
 # Seperates different menus
 menu_seperation:	.asciiz "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 new_line:			.asciiz "\n"
@@ -182,7 +189,7 @@ ship_health:		.word 0, 0, 0
 # $s1: total distance traveled
 # $s2: store the pace value, can store 1, 2, 3
 # $s3: stores the next island you will need to go to 
-# $s4: stores the rationing level (1, 2, or 3) 
+# $s4: 
 # $s5: stores the current day
 # s6: stores the food ration number. 1- bare bones. 2- meager, 3- filling 
 # s7: stores the number of living people 
@@ -208,7 +215,10 @@ main:
 
 	# initialize pace and rations
 	li $s2, 1
-	li $s4, 1
+	li $s6, 1
+
+	# initialize number of living people
+	li $s7, 5
 
 	# display intro message to screen
 	la $a0, intro_message
@@ -301,7 +311,7 @@ simulate_day_sea:
 
 simulate_day_island: 
 	# set the distance to the island distance
-	move $s0, $t4
+	move $s1, $t4
 
 	li $v0, 4
 	la $a0, menu_seperation
@@ -542,6 +552,7 @@ option_menu_island:
 	beq $t4, 1, call_store_island # if user selected option 1 then go to the shop meny 
 	beq $t4, 2, call_leave_island
 	beq $t4, 3, call_check_supplies 
+	beq $t4, 4, call_change_pace
 	beq $t4, 5, call_change_rations
 	beq $t4, 6, call_distance_traveled
 
@@ -775,7 +786,7 @@ stamina_pace_1:
 	j stamina_rations 
 stamina_pace_2:
 	addi $s0, $s0, 10 #add 20 to stamina if pace is 2 
-	j_stamina_rations
+	j stamina_rations
 #add 20 to stamina for filling, 10 for meager, nothing for barebones 
 stamina_rations: 	
 	beq $s2, 1, stamina_rations_1
@@ -1699,3 +1710,101 @@ no_spare_part:
 	li $v0, 4
 	syscall
 	j GAME_OVER
+
+storm:
+	# save $ra on stack
+	addi $sp, $sp, 4
+	sw $ra, 4($sp)
+
+	la $a0, menu_seperation
+	li $v0, 4
+	syscall
+
+	# storm message
+	la $a0, storm_message
+	li $v0, 4
+	syscall
+
+	#determine if storm or hurricane(20%)
+	li $a0, 0
+	li $a1, 100
+	li $v0, 42
+	syscall
+
+	blt $a0, 20, storm_damage
+
+storm_proper:
+	# 10% something gets damaged
+	li $a0, 0
+	li $a1, 100
+	li $v0, 42
+	syscall
+
+	blt $a0, 10, storm_damage
+
+	# storm weathered
+	la $a0, storm_weathered_message
+	li $v0, 4
+	syscall
+
+	j storm_exit
+	
+
+storm_hurricane:
+	# notify of hurricane
+	la $a0, storm_hurricane_message
+	li $v0, 4
+	syscall
+	
+	# 30% something gets damaged
+	li $a0, 0
+	li $a1, 10
+	li $v0, 42
+	syscall
+
+	blt $a0, 30, storm_damage
+
+	# storm weathered
+	la $a0, storm_weathered_message
+	li $v0, 4
+	syscall
+
+	j storm_exit
+
+storm_damage:
+	la $a0, storm_damage_message
+	li $v0, 4
+	syscall
+
+	# pick a random ship part to break
+	li $a0, 0
+	li $a1, 3
+	li $v0, 42
+
+	# get the address of the ship part
+	la $t0, ship_health
+	sll $t1, $a0, 2
+	add $t0, $t0, $t1
+
+	# set to broken
+	li $t1, 1
+	sw $t1, ($t0)
+
+	# handle broken ship parts
+	beq $a0, 0, storm_mast_broken
+	beq $a0, 1, storm_sail_broken
+	jal rudder_broken
+	j storm_exit
+
+storm_mast_broken:
+	jal mast_broken
+	j storm_exit
+
+storm_sail_broken:
+	jal sail_broken
+	j storm_exit
+
+storm_exit:
+	lw $ra, 4($sp)
+	addi $sp, $sp, -4
+	jr $ra
