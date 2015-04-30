@@ -50,7 +50,7 @@ fish_total: 		.asciiz "You have caught "
 fish_totalcont:		.asciiz " fish\n"
 
 # Messages used at the start of the game
-intro_message:		.asciiz "The goal of this game is for the captain to make it to the treasure. You will have to survive starvation, mutiny, scurvy, enemies.\n"
+intro_message:		.asciiz "The goal of this game is to make it to the treasure. You will have to survive starvation, mutiny, scurvy, enemies.\n"
 input_captain_name: .asciiz "Enter the captain's name: "
 input_crew_message: .asciiz "Enter crew members names\n"
 one:				.asciiz "1: "
@@ -103,13 +103,20 @@ store_error:		.asciiz "Must enter a number between 1 and 6.\n"
 store_not_enough_gold:	.asciiz "Not enough gold, change values.\n"
 
 # Messages to describe what each store item does
-fish_help_message:	.asciiz "You should take fish with you to replenish your supply of food.\n"
+fish_help_message:	.asciiz "You should take fish with you to replenish your supply of food. \n"
 rum_help_message:	.asciiz "You should take rum with you so that your crew members won't be dehydrated.\n"
-clothes_help_message:	.asciiz "You should take clothes to protect yourself from the elements.\n"
+clothes_help_message:	.asciiz "You should take clothes to protect yourself from the elements. \n"
 ammo_help_message:	.asciiz "You should take ammo to protect yourself from enemies.\n"
 hook_help_message:	.asciiz "Get a hook arm!\n"
 spare_help_message:	.asciiz "It's a good idea to have spare parts for your boat.\n"
-
+#First store encounter recommendations 
+recommendations_title:	.asciiz "You will need need to maintain supplies of fish, rum, clothes, hooks, ship parts, and cannon balls on your journey \n"
+recommendations_fish:	.asciiz "We recommend you buy at least 400 fish \n"
+recommendations_rum:	.asciiz "We recommend you buy at least 200 handles of rum \n"
+recommendations_clothes:.asciiz	"We recommend you buy 2 sets of clothes for each crew member and yourself \n"
+recommendations_hooks:	.asciiz "We recommend you buy 1 hook for yourself \n"
+recommendations_ship_parts:	.asciiz "We recommend you buy 2 spares for each ship part \n"
+recommendations_balls:	.asciiz "We recommend you buy 50 cannonballs\n"
 # Messages used when buying store items
 fish_buy_message:	.asciiz "How many fish would you like to buy? "
 rum_buy_message:	.asciiz "How much rum would you like to buy? "
@@ -160,7 +167,7 @@ new_line:			.asciiz "\n"
 # Winning messages 
 congrats:			.asciiz "Congratulations! You made it to Pirates Cove! \n"
 happy_story: 		.asciiz "You dig around on the beach and find a treasure chest! \n"
-treasure_chest:		.asciiz "          _,---.-.---------------.-.---,_\n     _.-'`====/o/=================\o\====`'-._\n   .'========/o/===================\o\========'.\n  |---------)~(---------------------)~(---------|\n   \________\o/________.---.________\o/________/\n    |=======/o\========) ? (========/o\=======|\n    |       | |       (  '  )       | |       |\n    |=======|o|========'---'========|o|=======|\n    |       | |         ____        | |       |\n    |=======|o|========)X| /(=======|o|=======|\n    |       | |       |XX|/ /|      | |       |\n    |=======|o|=======\--/ / /======|o|=======|\n    |       | |        '/_/.'       | |       |\n    |=======|o|=====================|o|=======|\n    '-------'-'---------------------'-'-------'\n"
+treasure_chest:		.asciiz "          _,---.-.---------------.-.---,_\n     _.-'`====/o/=================\\o\\====`'-._\n   .'========/o/===================\\o\\========'.\n  |---------)~(---------------------)~(---------|\n    \________\\o/________.---.________\\o/________/\n    |=======/o\\========) ? (========/o\\=======|\n    |       | |       (  '  )       | |       |\n    |=======|o|========'---'========|o|=======|\n    |       | |         ____        | |       |\n    |=======|o|========)X| /(=======|o|=======|\n    |       | |       |XX|/ /|      | |       |\n    |=======|o|=======\--/ / /======|o|=======|\n    |       | |        '/_/.'       | |       |\n    |=======|o|=====================|o|=======|\n    '-------'-'---------------------'-'-------'\n"
 happy_print:		.asciiz "Inside the chest you find a banana. The end. \n"
 # crew members names
 name_captain:		.space 40
@@ -287,9 +294,34 @@ main:
 	la $a0, name_crew_4
 	li $a1, 40		# maximum number of characters
 	li $v0, 8
-	syscall
 	
+	syscall
+	li $v0, 4 
+
+	la $a0, recommendations_title
+	syscall 
+
+	la $a0, recommendations_fish
+	syscall 
+
+	la $a0, recommendations_rum
+	syscall 
+
+	la $a0, recommendations_clothes 
+	syscall 
+
+	la $a0, recommendations_hooks 
+	syscall 
+
+	la $a0, recommendations_balls
+	syscall 
+
+	la $a0, recommendations_ship_parts
+	syscall 
+
 	jal store
+
+
 
 simulate_day_sea:
 
@@ -306,7 +338,7 @@ simulate_day_sea:
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
-	beq $s1, 4 	
+	beq $s1, 4, check_win	
 	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island
 	j continue_day_sea  
 check_win: 
@@ -713,6 +745,9 @@ change_pace:
 	la $a0, pace_grueling #description for grueling pace
 	syscall 
 
+	la $a0, $island_optenter
+	syscall 
+	
 	li $v0, 5
 	syscall 
 
