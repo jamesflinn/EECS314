@@ -1,4 +1,5 @@
 	.data
+
 #island messages 
 island_approach:	.asciiz "You are approaching \n" 
 island_reached: 	.asciiz "You are on island " 
@@ -18,6 +19,15 @@ island_optpace:		.asciiz "4. Change Pace\n"
 island_optrations: 	.asciiz "5. Change Food Rations \n"
 island_optdist: 	.asciiz "6. Distance Traveled \n"
 island_optenter: 	.asciiz "Enter Option: "
+#First store encounter recommendations 
+recommendations_title:	.asciiz "You will need need to maintain supplies of fish, rum, clothes, hooks, ship parts, and cannon balls on your journey \n"
+recommendations_fish:	.asciiz "We recommend you buy at least 400 fish \n"
+recommendations_rum:	.asciiz "We recommend you buy at least 200 handles of rum \n"
+recommendations_clothes:.asciiz	"We recommend you buy 2 sets of clothes for each crew member and yourself \n"
+recommendations_hooks:	.asciiz "We recommend you buy 1 hook for yourself \n"
+recommendations_ship_parts:	.asciiz "We recommend you buy 2 spares for each ship part \n"
+recommendations_balls:	.asciiz "We recommend you buy 50 cannonballs\n"
+reccomendations_continue:	.asciiz"Press enter to continue to the store:"
 
 #weather options
 sea_cond1:			.asciiz "calm\n"
@@ -50,6 +60,7 @@ fish_total: 		.asciiz "You have caught "
 fish_totalcont:		.asciiz " fish\n"
 
 # Messages used at the start of the game
+welcome_message:	.asciiz "					***** PIRATE'S COVE *****					\n"
 intro_message:		.asciiz "The goal of this game is for the captain to make it to the treasure. You will have to survive starvation, mutiny, scurvy, enemies.\n"
 input_captain_name: .asciiz "Enter the captain's name: "
 input_crew_message: .asciiz "Enter crew members names\n"
@@ -161,7 +172,7 @@ new_line:			.asciiz "\n"
 # Winning messages 
 congrats:			.asciiz "Congratulations! You made it to Pirates Cove! \n"				
 happy_story: 		.asciiz "You dig around on the beach and find a treasure chest! \n"		
-treasure_chest:		.asciiz "          _,---.-.---------------.-.---,_\n     _.-'`====/o/=================\o\====`'-._\n   .'========/o/===================\o\========'.\n  |---------)~(---------------------)~(---------|\n   \________\o/________.---.________\o/________/\n    |=======/o\========) ? (========/o\=======|\n    |       | |       (  '  )       | |       |\n    |=======|o|========'---'========|o|=======|\n    |       | |         ____        | |       |\n    |=======|o|========)X| /(=======|o|=======|\n    |       | |       |XX|/ /|      | |       |\n    |=======|o|=======\--/ / /======|o|=======|\n    |       | |        '/_/.'       | |       |\n    |=======|o|=====================|o|=======|\n    '-------'-'---------------------'-'-------'\n"
+treasure_chest:		.asciiz "          _,---.-.---------------.-.---,_\n     _.-'`====/o/=================\\o\\====`'-._\n   .'========/o/===================\\o\\========'.\n  |---------)~(---------------------)~(---------|\n    \________\\o/________.---.________\\o/________/\n    |=======/o\\========) ? (========/o\\=======|\n    |       | |       (  '  )       | |       |\n    |=======|o|========'---'========|o|=======|\n    |       | |         ____        | |       |\n    |=======|o|========)X| /(=======|o|=======|\n    |       | |       |XX|/ /|      | |       |\n    |=======|o|=======\--/ / /======|o|=======|\n    |       | |        '/_/.'       | |       |\n    |=======|o|=====================|o|=======|\n    '-------'-'---------------------'-'-------'\n"
 happy_print:		.asciiz "Inside the chest you find a banana. The end. \n"
 
 # crew members names
@@ -226,7 +237,21 @@ main:
 
 	# initialize number of living people
 	li $s7, 5
+	
+	li $v0, 4 
+	la $a0, new_line
+	syscall
+	syscall 
+	syscall
+	syscall 
+	#display game title
+	li $v0, 4
+	la $a0, welcome_message
+	syscall
 
+	li $v0, 4
+	la $a0, new_line
+	syscall 
 	# display intro message to screen
 	la $a0, intro_message
 	li $v0, 4
@@ -290,9 +315,42 @@ main:
 	li $a1, 40		# maximum number of characters
 	li $v0, 8
 	syscall
-	
-	jal store
 
+	li $v0, 4
+	la $a0, new_line
+	syscall
+
+	jal rec_menu
+
+
+rec_menu: #displays reccomendations for purchases
+	li $v0, 4
+	la $a0, recommendations_title
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_fish
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_rum
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_clothes 
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_hooks 
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_balls
+	syscall 
+	li $v0, 4
+	la $a0, recommendations_ship_parts
+	syscall
+	li $v0, 4
+	la $a0, reccomendations_continue
+	syscall 
+	li $v0, 8
+	syscall 
+	jal store
 simulate_day_sea:
 
 	jal increment_day
@@ -740,6 +798,9 @@ change_pace:
 	syscall 
 	li $v0, 4
 	la $a0, pace_grueling #description for grueling pace
+	syscall 
+
+	la $a0, island_optenter
 	syscall 
 
 	li $v0, 5
@@ -1436,7 +1497,7 @@ check_health_death:
 	sll $t3, $t3, 2		#get the offset for the correct array location
 	add $t4, $t4, $t3	#get the array location in question (add offset)
 	lw $t5, ($t4)		#pull the value stored
-	beq $t5, -1, sick_deadman
+	beq $t5, -1, check_health_exit
 
 	sub $s7, $s7, 1
 	# display death message
