@@ -18,6 +18,14 @@ island_optpace:		.asciiz "4. Change Pace\n"
 island_optrations: 	.asciiz "5. Change Food Rations \n"
 island_optdist: 	.asciiz "6. Distance Traveled \n"
 island_optenter: 	.asciiz "Enter Option: "
+#First store encounter recommendations 
+recommendations_title:	.asciiz "You will need need to maintain supplies of fish, rum, clothes, hooks, ship parts, and cannon balls on your journey \n"
+recommendations_fish:	.asciiz "We recommend you buy at least 400 fish \n"
+recommendations_rum:	.asciiz "We recommend you buy at least 200 handles of rum \n"
+recommendations_clothes:.asciiz	"We recommend you buy 2 sets of clothes for each crew member and yourself \n"
+recommendations_hooks:	.asciiz "We recommend you buy 1 hook for yourself \n"
+recommendations_ship_parts:	.asciiz "We recommend you buy 2 spares for each ship part \n"
+recommendations_balls:	.asciiz "We recommend you buy 50 cannonballs\n"
 
 #weather options
 sea_cond1:			.asciiz "calm\n"
@@ -28,7 +36,7 @@ sea_cond3:			.asciiz "hurricane!\n"
 food_title:			.asciiz "Change food rations, currently "
 filling_option: 	.asciiz "1. filling: meals are large and generous\n"
 meager_option:		.asciiz "2. meager: meals are small, but adequate\n"
-bare_option:		.asciiz "3. bare bones: meals are very small; everyone stays hungry \n"
+bare_option:		.asciiz "3. bare bones: mealse are very small; everyone stays hungry \n"
 food_intro: 		.asciiz "The amounf of food the people in your crew eat each day can change. These amounts are:\n"
 
 #pace menu 
@@ -50,7 +58,7 @@ fish_total: 		.asciiz "You have caught "
 fish_totalcont:		.asciiz " fish\n"
 
 # Messages used at the start of the game
-intro_message:		.asciiz "The goal of this game is to make it to the treasure. You will have to survive starvation, mutiny, scurvy, enemies.\n"
+intro_message:		.asciiz "The goal of this game is for the captain to make it to the treasure. You will have to survive starvation, mutiny, scurvy, enemies.\n"
 input_captain_name: .asciiz "Enter the captain's name: "
 input_crew_message: .asciiz "Enter crew members names\n"
 one:				.asciiz "1: "
@@ -103,20 +111,13 @@ store_error:		.asciiz "Must enter a number between 1 and 6.\n"
 store_not_enough_gold:	.asciiz "Not enough gold, change values.\n"
 
 # Messages to describe what each store item does
-fish_help_message:	.asciiz "You should take fish with you to replenish your supply of food. \n"
+fish_help_message:	.asciiz "You should take fish with you to replenish your supply of food.\n"
 rum_help_message:	.asciiz "You should take rum with you so that your crew members won't be dehydrated.\n"
-clothes_help_message:	.asciiz "You should take clothes to protect yourself from the elements. \n"
+clothes_help_message:	.asciiz "You should take clothes to protect yourself from the elements.\n"
 ammo_help_message:	.asciiz "You should take ammo to protect yourself from enemies.\n"
 hook_help_message:	.asciiz "Get a hook arm!\n"
 spare_help_message:	.asciiz "It's a good idea to have spare parts for your boat.\n"
-#First store encounter recommendations 
-recommendations_title:	.asciiz "You will need need to maintain supplies of fish, rum, clothes, hooks, ship parts, and cannon balls on your journey \n"
-recommendations_fish:	.asciiz "We recommend you buy at least 400 fish \n"
-recommendations_rum:	.asciiz "We recommend you buy at least 200 handles of rum \n"
-recommendations_clothes:.asciiz	"We recommend you buy 2 sets of clothes for each crew member and yourself \n"
-recommendations_hooks:	.asciiz "We recommend you buy 1 hook for yourself \n"
-recommendations_ship_parts:	.asciiz "We recommend you buy 2 spares for each ship part \n"
-recommendations_balls:	.asciiz "We recommend you buy 50 cannonballs\n"
+
 # Messages used when buying store items
 fish_buy_message:	.asciiz "How many fish would you like to buy? "
 rum_buy_message:	.asciiz "How much rum would you like to buy? "
@@ -155,20 +156,22 @@ fix_message:				.asciiz "You use a spare part to fix your ship!\n"
 no_fix_message:				.asciiz "You do not have the correct part to repair your ship! YOU LOSE!\n"
 
 # Storm messages
-storm_message:		.asczii "A storm has hit! \n"
-storm_hurricane_message:.asczii "It's a hurricane! \n"
+storm_message:		.asciiz "A storm has hit! \n"
+storm_hurricane_message:.asciiz "It's a hurricane! \n"
 storm_damage_message:	.asciiz "Your ship has been damaged in the storm! \n"
-storm_weathered:	.asciiz "You have weathered the storm safely! \n"
-storm_exit:		.asciiz "The sky clears... \n"
+storm_weathered_message:	.asciiz "You have weathered the storm safely! \n"
+storm_exit_message:		.asciiz "The sky clears... \n"
 
 # Seperates different menus
 menu_seperation:	.asciiz "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 new_line:			.asciiz "\n"
+
 # Winning messages 
-congrats:			.asciiz "Congratulations! You made it to Pirates Cove! \n"
-happy_story: 		.asciiz "You dig around on the beach and find a treasure chest! \n"
+congrats:			.asciiz "Congratulations! You made it to Pirates Cove! \n"				
+happy_story: 		.asciiz "You dig around on the beach and find a treasure chest! \n"		
 treasure_chest:		.asciiz "          _,---.-.---------------.-.---,_\n     _.-'`====/o/=================\\o\\====`'-._\n   .'========/o/===================\\o\\========'.\n  |---------)~(---------------------)~(---------|\n    \________\\o/________.---.________\\o/________/\n    |=======/o\\========) ? (========/o\\=======|\n    |       | |       (  '  )       | |       |\n    |=======|o|========'---'========|o|=======|\n    |       | |         ____        | |       |\n    |=======|o|========)X| /(=======|o|=======|\n    |       | |       |XX|/ /|      | |       |\n    |=======|o|=======\--/ / /======|o|=======|\n    |       | |        '/_/.'       | |       |\n    |=======|o|=====================|o|=======|\n    '-------'-'---------------------'-'-------'\n"
 happy_print:		.asciiz "Inside the chest you find a banana. The end. \n"
+
 # crew members names
 name_captain:		.space 40
 name_crew_1:		.space 40
@@ -231,7 +234,13 @@ main:
 
 	# initialize number of living people
 	li $s7, 5
-
+	
+	li $v0, 4 
+	la $a0, new_line
+	syscall
+	syscall 
+	syscall
+	syscall 
 	# display intro message to screen
 	la $a0, intro_message
 	li $v0, 4
@@ -294,8 +303,8 @@ main:
 	la $a0, name_crew_4
 	li $a1, 40		# maximum number of characters
 	li $v0, 8
-	
 	syscall
+	
 	li $v0, 4 
 
 	la $a0, recommendations_title
@@ -317,11 +326,9 @@ main:
 	syscall 
 
 	la $a0, recommendations_ship_parts
-	syscall 
+	syscall
 
 	jal store
-
-
 
 simulate_day_sea:
 
@@ -338,16 +345,43 @@ simulate_day_sea:
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
-	beq $s1, 4, check_win	
+	beq $s1, 4, check_win
 	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island
 	j continue_day_sea  
+
 check_win: 
 	bge $s1, $t4, happy_ending
-continue_day_sea: 
+
+continue_day_sea:
 	#if island is not reached, continue 
 	jal crew_eat 
 	jal crew_rum 
+	jal contract_check
+	jal check_health
+
+	# simulate random events!
+	li $a0, 0
+	li $a1, 100
+	li $v0, 42
+	syscall
+
+	blt $a0, 2, call_skeleton_attack
+	blt $a0, 7, call_storm
+	blt $a0, 20, call_fishing
+
 	j simulate_day_sea 
+
+call_skeleton_attack:
+	jal skeleton_attack
+	j simulate_day_sea
+
+call_storm:
+	jal storm
+	j simulate_day_sea
+
+call_fishing:
+	jal fishing_spot
+	j simulate_day_sea
 
 simulate_day_island: 
 	# set the distance to the island distance
@@ -745,9 +779,9 @@ change_pace:
 	la $a0, pace_grueling #description for grueling pace
 	syscall 
 
-	la $a0, $island_optenter
+	la $a0, island_optenter
 	syscall 
-	
+
 	li $v0, 5
 	syscall 
 
@@ -1450,13 +1484,6 @@ check_health_death:
 	sw $t4, ($t0)
 	j check_health_member_2
 
-check_health_cap_death:
-	la $a0, captain_death_message
-	li $v0, 4
-	syscall
-	
-	j GAME_OVER
-
 check_health_cured:
 	# display cured message
 	move $a0, $t1
@@ -1602,6 +1629,8 @@ skeleton_battle_death:
 	li $v0, 42
 	syscall
 
+	move $t0, $a0
+
 	# display crew members name who died
 	jal get_crew_name
 	move $a0, $v0
@@ -1609,10 +1638,10 @@ skeleton_battle_death:
 	syscall
 
 	#check for captain death
-	beq $a1, 0, skeleton_cap_death
+	beq $a1, 0, check_health_cap_death
 
 	# set crew member as dead in crew_health
-	sll $t0, $a0, 2
+	sll $t0, $t0, 2
 	la $t1, crew_health
 	add $t1, $t1, $t0
 	sw $zero, ($t1)
@@ -1774,9 +1803,6 @@ no_spare_part:
 	syscall
 	j GAME_OVER
 
-# ********************************************
-# Hit a storm
-# ********************************************
 storm:
 	# save $ra on stack
 	addi $sp, $sp, 4
@@ -1871,6 +1897,10 @@ storm_sail_broken:
 	j storm_exit
 
 storm_exit:
+	la $a0, storm_exit_message
+	li $v0, 4
+	syscall
+
 	lw $ra, 4($sp)
 	addi $sp, $sp, -4
 	jr $ra
