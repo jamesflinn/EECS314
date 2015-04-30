@@ -28,7 +28,7 @@ sea_cond3:			.asciiz "hurricane!\n"
 food_title:			.asciiz "Change food rations, currently "
 filling_option: 	.asciiz "1. filling: meals are large and generous\n"
 meager_option:		.asciiz "2. meager: meals are small, but adequate\n"
-bare_option:		.asciiz "3. bare bones: mealse are very small; everyone stays hungry \n"
+bare_option:		.asciiz "3. bare bones: meals are very small; everyone stays hungry \n"
 food_intro: 		.asciiz "The amounf of food the people in your crew eat each day can change. These amounts are:\n"
 
 #pace menu 
@@ -122,7 +122,7 @@ rudder_buy_message:	.asciiz "How many rudders would you like to buy? "
 
 # Disease messages
 contract_disease_message:	.asciiz "A crew member has contracted scurvy! Their name is "
-captain_death_message:	.asciiz "Your captain has died! You cannot continue.
+captain_death_message:	.asciiz "Your captain has died! You cannot continue."
 death_message:		.asciiz "A crew member has died! RIP "
 cured_message:		.asciiz "A crew member has recovered! Good job "
 
@@ -157,7 +157,25 @@ storm_exit:		.asciiz "The sky clears... \n"
 # Seperates different menus
 menu_seperation:	.asciiz "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 new_line:			.asciiz "\n"
-
+# Winning messages 
+congrats:			.asciiz "Congratulations! You made it to Pirates Cove! \n"
+happy_story: 		.asciiz "You dig around on the beach and find a treasure chest! \n"
+treasure_chest:		.asciiz "          _,---.-.---------------.-.---,_\n
+     _.-'`====/o/=================\o\====`'-._\n
+   .'========/o/===================\o\========'.\n
+  |---------)~(---------------------)~(---------|\n
+   \________\o/________.---.________\o/________/\n
+    |=======/o\========) ? (========/o\=======|\n
+    |       | |       (  '  )       | |       |\n
+    |=======|o|========'---'========|o|=======|\n
+    |       | |         ____        | |       |\n
+    |=======|o|========)X| /(=======|o|=======|\n
+    |       | |       |XX|/ /|      | |       |\n
+    |=======|o|=======\--/ / /======|o|=======|\n
+    |       | |        '/_/.'       | |       |\n
+    |=======|o|=====================|o|=======|\n
+    '-------'-'---------------------'-'-------'\n"
+happy_print:		.asciiz "Inside the chest you find a banana. The end. \n"
 # crew members names
 name_captain:		.space 40
 name_crew_1:		.space 40
@@ -302,9 +320,12 @@ simulate_day_sea:
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
-
-	bgt $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island 
-
+	beq $s1, 4 	
+	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island
+	j continue_day_sea  
+check_win: 
+	bge $s1, $t4, happy_ending
+continue_day_sea: 
 	#if island is not reached, continue 
 	jal crew_eat 
 	jal crew_rum 
@@ -1832,3 +1853,16 @@ storm_exit:
 	lw $ra, 4($sp)
 	addi $sp, $sp, -4
 	jr $ra
+
+happy_ending: 
+	li $v0, 4 #Print 
+	la $a0, congrats 
+	syscall 
+	la $a0, happy_story 
+	syscall 
+	la $a0, treasure_chest
+	syscall 
+	la $a0, happy_ending 
+	syscall 
+	li $v0, 10
+	syscall  
