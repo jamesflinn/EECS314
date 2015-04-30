@@ -65,7 +65,7 @@ options_supplies:	.asciiz "1. Check supplies\n"
 options_distance:	.asciiz "2. Check distance to next destination\n"
 options_pace:		.asciiz "3. Change pace\n"
 options_food:		.asciiz "4. Change food rations\n"
-options_buy:		.asciiz "5. Buy supplies\n"
+options_continue: 	.asciiz "5. Continue on journey\n"
 
 # Options menu for start
 options_start:		.asciiz "1. Start on your voyage\n"
@@ -168,7 +168,7 @@ store_item_count:	.word 0 0 0 0 0 0 0 0
 item_count:			.word 0 0 0 0 0 0 0 0 1600
 
 # distance each island occurs
-island_array: 		.word 0, 100, 300, 450, 700, 800, 1000
+island_array: 		.word 100, 300, 450, 700, 800, 1000
 
 # health of each crew members
 crew_health:		.word 0, 0, 0, 0, 0
@@ -272,30 +272,40 @@ main:
 	syscall
 	
 	jal store
-	jal skeleton_attack
-
-	li $v0, 10
-	syscall
 
 simulate_day_sea:
 
 	jal increment_day
-	jal option_menu_sea
+	jal option_menu_sea_func
 	jal add_distance
 
 	# check if next island is reached
 	la $t3, island_array #checking the island array to find distance of next island location 
-	add $t4, $s3, $zero 
-	addi $t1, $t1, 4
+	move $t4, $s3
+	addi $t1, $zero, 4
 	mult $t4, $t1
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
-	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island 
+
+	li $v0, 1
+	add $a0, $t4, $zero #prints out location of island
+	syscall 
+
+	li $v0, 4
+	la $a0, new_line
+	syscall 
+	
+	li $v0, 1
+	add $a0, $s1, $zero 
+	syscall 
+
+	bgt $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island 
 
 	#if island is not reached, continue 
 	jal crew_eat 
 	jal crew_rum 
+	j simulate_day_sea 
 
 simulate_day_island: 
 	li $v0, 4	
@@ -303,9 +313,10 @@ simulate_day_island:
 	syscall 
 
 	jal increment_day 
-	jal option_menu_island
+	jal option_menu_island_func
 	jal crew_eat 
 	jal crew_rum 
+	j simulate_day_sea
 
 increment_day: 
 	addi $s5, $s5, 1 #increment the day
@@ -335,6 +346,7 @@ add_distance:
 	li $a1, 9
 	li $v0, 42
 	syscall
+
 	addi $a0, $a0, 1 #ensures that the randomly generated number is 1 -10 
 
 check_pace:
@@ -420,9 +432,9 @@ crew_rum:
 	addi $t1, $zero, 1
 	#check the amount of rum that we have 
 	la $t4, item_count 
-	li $t3, 1
+	li $t3, 4
 	add $t2, $t3, $t4 
-	lw $t5, 0($t2) #value of amount of fish
+	lw $t5, 0($t2) #value of amount of rum 
 	blt $t5, $zero, GAME_OVER
 	#deduct 1 handle of rum for each crew member
 	sub $t5, $t5, $s7
@@ -431,28 +443,30 @@ crew_rum:
 	jr $ra 
 
 # TODO: add code to get random events, decrement food, recalculate health
+option_menu_sea_func:
+	addi $sp, $sp, 4 
+	sw $ra, 4($sp)
+
 option_menu_sea: 
+
 	li $v0, 4 
 	la $a0, menu_seperation 
 	syscall 
 
-	li $v0, 4
 	la $a0, options_supplies
 	syscall 
 
-	li $v0, 4
 	la $a0, options_distance
 	syscall 
 
-	li $v0, 4
 	la $a0, options_pace
 	syscall 
 
-
-	li $v0, 4
 	la $a0, options_food
 	syscall 
- 
+ 	
+	la $a0, options_continue
+	syscall 
 
 	li $v0, 4
 	la $a0, island_optenter
@@ -467,6 +481,16 @@ option_menu_sea:
 	beq  $t1, 2, call_distance_traveled_sea
 	beq  $t1, 3, call_change_pace_sea
 	beq $t1, 4, call_change_rations_sea
+	beq $t1, 5, call_continue_sea 
+
+call_continue_sea:
+	lw $ra, 4($sp)
+	addi $sp, $sp, -4 
+	jr $ra 
+
+option_menu_island_func:
+	addi $sp, $sp, 4 
+	sw $ra, 4($sp)
 
 option_menu_island: 
 	li $v0, 4
@@ -511,30 +535,38 @@ option_menu_island:
 	beq $t4, 3, call_check_supplies 
 	beq $t4, 5, call_change_rations
 	beq $t4, 6, call_distance_traveled
+
 call_store_island:
 	jal store 
 	j option_menu_island
+
 call_leave_island:
-	jal leave_island
-	j option_menu_island
+	j leave_island
+
 call_check_supplies:
 	jal check_supplies 
 	j option_menu_island
+
 call_check_supplies_sea:
 	jal check_supplies
 	j option_menu_sea
+
 call_change_pace:
 	jal change_pace 
 	j option_menu_island
+
 call_change_pace_sea:
 	jal change_pace 
 	j option_menu_sea
+
 call_change_rations:
 	jal change_rations
 	j option_menu_island
+
 call_change_rations_sea:
 	jal change_rations
 	j option_menu_sea  
+
 call_distance_traveled:
 	li $v0, 4
 	la $a0, print_distance 
@@ -598,7 +630,7 @@ change_rations:
 	syscall 
 
 	move $s6, $v0 #store new value in reg
-
+	jr $ra 
 change_pace:
 
 	li $v0, 4
@@ -616,11 +648,15 @@ change_pace:
 
 	li $v0, 5
 	syscall 
+
 	move $s2, $v0 #load the input into the s2 register 
+	jr $ra 
 
 leave_island:
-	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array 
-	jal simulate_day_sea
+	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array
+	lw $ra, 4($sp)
+	addi $sp, $sp, -4 
+	jr $ra
 
 
 # ********************************************
