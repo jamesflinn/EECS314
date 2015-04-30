@@ -34,7 +34,7 @@ bare_option:		.asciiz "3. bare bones: mealse are very small; everyone stays hung
 food_intro: 		.asciiz "The amounf of food the people in your crew eat each day can change. These amounts are:\n"
 
 #pace menu 
-pace_intro: 		.asciiz "Select your pace"
+pace_intro: 		.asciiz "Select your pace \n"
 pace_steady:		.asciiz "1. Steady - You travel about 8 hours a day, taking frequent rests. \n"
 pace_strenuous:		.asciiz "2. Strenuous - You travelabout 12 hours a day, starting just after sunrise and stoping shortly before sunset. \n You take care not to get too tired.\n You stop to rest only when necessary. You finish each day feeling very tired \n"
 pace_grueling:		.asciiz "3. Grueling- You travel about 16 hourse a day, starting before sunrise and continueing until dark. \n You almost never stop to rest. You do not get enough sleep at night. You finish each day feeling exhausted, and your helath suffers. \n"
@@ -148,7 +148,7 @@ store_item_count:	.word 0 0 0 0 0 0 0 0
 item_count:			.word 0 0 0 0 0 0 0 0 1600
 
 # distance each island occurs
-island_array: 		.word 0, 100, 300, 450, 700, 800, 1000
+island_array: 		.word 100, 300, 450, 700, 800, 1000
 
 # health of each crew members
 crew_health:		.word 0, 0, 0, 0, 0
@@ -180,9 +180,11 @@ main:
 	li $a0, 0
 	syscall 
 
-	# initialize day and distance to 0
+	# initialize day, number of crew, distance, and next island to 0, 5, 0, 0 respectively 
 	li $s1, 0
 	li $s5, 0
+	li $s7, 5
+	li $s3, 0
 
 	# display intro message to screen
 	la $a0, intro_message
@@ -267,7 +269,20 @@ simulate_day_sea:
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
-	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island 
+
+	li $v0, 1
+	add $a0, $t4, $zero #prints out location of island
+	syscall 
+
+	li $v0, 4
+	la $a0, new_line
+	syscall 
+	
+	li $v0, 1
+	add $a0, $s1, $zero 
+	syscall 
+
+	bgt $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island 
 
 	#if island is not reached, continue 
 	jal crew_eat 
@@ -312,6 +327,13 @@ add_distance:
 	li $a1, 9
 	li $v0, 42
 	syscall
+
+	li $v0, 1 
+	syscall 
+	
+	la, $a0, new_line
+	li $v0, 4
+	syscall 
 	addi $a0, $a0, 1 #ensures that the randomly generated number is 1 -10 
 
 check_pace:
@@ -397,9 +419,9 @@ crew_rum:
 	addi $t1, $zero, 1
 	#check the amount of rum that we have 
 	la $t4, item_count 
-	li $t3, 1
+	li $t3, 4
 	add $t2, $t3, $t4 
-	lw $t5, 0($t2) #value of amount of fish
+	lw $t5, 0($t2) #value of amount of rum 
 	blt $t5, $zero, GAME_OVER
 	#deduct 1 handle of rum for each crew member
 	sub $t5, $t5, $s7
@@ -576,7 +598,7 @@ change_rations:
 	syscall 
 
 	move $s6, $v0 #store new value in reg
-
+	jr $ra 
 change_pace:
 
 	li $v0, 4
@@ -594,11 +616,13 @@ change_pace:
 
 	li $v0, 5
 	syscall 
+
 	move $s2, $v0 #load the input into the s2 register 
+	jr $ra 
 
 leave_island:
 	addi $s3, $s3, 1 # increment the s3 register which keeps track of which island you are on in the island array 
-	jal simulate_day_sea
+	j simulate_day_sea
 
 
 # ********************************************
