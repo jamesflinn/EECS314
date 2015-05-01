@@ -384,9 +384,9 @@ continue_day_sea:
 	li $v0, 42
 	syscall
 
-	blt $a0, 2, call_skeleton_attack
-	blt $a0, 7, call_storm
-	blt $a0, 20, call_fishing
+	blt $a0, 4, call_skeleton_attack
+	blt $a0, 12, call_storm
+	blt $a0, 22, call_fishing
 
 	j simulate_day_sea 
 
