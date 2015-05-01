@@ -460,7 +460,7 @@ increment_day:
 add_distance: 
 	# generate random number between 0-9
 	li $a0, 0
-	li $a1, 9
+	li $a1, 5
 	li $v0, 42
 	syscall
 
@@ -725,7 +725,7 @@ call_distance_traveled:
 	syscall
 
 	j option_menu_island
-	
+
 call_distance_traveled_sea:
 	li $v0, 4
 	la $a0, menu_seperation
