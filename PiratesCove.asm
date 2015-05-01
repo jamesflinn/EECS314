@@ -323,7 +323,6 @@ main:
 
 	jal rec_menu
 
-
 rec_menu: #displays reccomendations for purchases
 	li $v0, 4
 	la $a0, recommendations_title
@@ -352,6 +351,10 @@ rec_menu: #displays reccomendations for purchases
 	li $v0, 8
 	syscall 
 	jal store
+
+# ********************************************
+# Simulates a day while at sea
+# ********************************************	
 simulate_day_sea:
 
 	jal increment_day
@@ -402,6 +405,9 @@ call_fishing:
 	jal fishing_spot
 	j simulate_day_sea
 
+# ********************************************
+# Simulates a day while at an island
+# ********************************************
 simulate_day_island: 
 	# set the distance to the island distance
 	move $s1, $t4
@@ -429,6 +435,9 @@ simulate_day_island:
 	jal crew_rum 
 	j simulate_day_sea
 
+# ********************************************
+# Increments the day
+# ********************************************
 increment_day: 
 	addi $s5, $s5, 1 #increment the day
 	li $v0, 4 	#Print the menu seperation 
@@ -550,13 +559,14 @@ crew_rum:
 	sw $t5, 0($t2)	
 	jr $ra 
 
-# TODO: add code to get random events, decrement food, recalculate health
 option_menu_sea_func:
 	addi $sp, $sp, 4 
 	sw $ra, 4($sp)
 
+# ********************************************
+# The option menu while at sea
+# ********************************************
 option_menu_sea: 
-
 	li $v0, 4 
 	la $a0, menu_seperation 
 	syscall 
@@ -715,6 +725,7 @@ call_distance_traveled:
 	syscall
 
 	j option_menu_island
+	
 call_distance_traveled_sea:
 	li $v0, 4
 	la $a0, menu_seperation
@@ -733,6 +744,9 @@ call_distance_traveled_sea:
 
 	j option_menu_sea
 
+# ********************************************
+# Changes the rate at which the crew eats food
+# ********************************************
 change_rations:
 	li $v0, 4
 	la $a0, menu_seperation
@@ -784,8 +798,11 @@ input_error_food:
 	syscall
 	j change_rations
 
-change_pace:
 
+# ********************************************
+# Changes the pace of the ship
+# ********************************************
+change_pace:
 	li $v0, 4
 	la $a0, menu_seperation
 	syscall
@@ -864,8 +881,11 @@ next_island_check:
 	syscall
 	jr $ra
 
-#The stamina can be anywhere from 20 to 120 
-#The stamina is affected by the amount of clothes, a hook, pace, and rations 
+
+# ********************************************
+# The stamina can be anywhere from 20 to 120 
+# The stamina is affected by the amount of clothes, a hook, pace, and rations
+# ******************************************** 
 calculate_stamina: 
 	li $s0, 0 #set s0 (stamina register) to 0 
 	li $t0, 4 #store t0 
@@ -1861,6 +1881,10 @@ no_spare_part:
 	syscall
 	j GAME_OVER
 
+# ********************************************
+# Calls a storm or a hurricane
+# Can damage shit
+# ********************************************
 storm:
 	# save $ra on stack
 	addi $sp, $sp, 4
