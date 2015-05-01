@@ -1,53 +1,6 @@
-fish: 5 fish per gold doubloon
-2 sets of clothes per person- 10 gold doubloons per set
-canon ball: 1 gold doubloon 
-rutter: 10 gold doubloons 
-mast: 10 gold doubloons 
-sail: 10 gold doubloons 
-
-Options:
-1. continue on path 
-2. check supplies 
-3. Distance to next island
-4. change pace 
- -steady
- -strenous 
- -grueling (a lot rest)
-5. change food rations 
-	-filling 
-	-meager
-	-bare bones 
-6. Stop to rest
-7. Attempt to trade
-8.Talk to people 
-9. Buy supplies (conditional)
-
-Continue on Trail:
--gives you distance to next island
--weather(wind and water conditions )
--health 
--food 
--Rum
--miles traveled
-
-**press space to continue, and increments to next day if nothing**
-
-Arrive at Island/ encounter an event:
--status window with current conditions
-
-At an island:
--check water conditions 
--either you wait or you go
-
-Option menu always comes up by command
-
-- if water conditions are bad: you lose a day or more
--ship might get damaged 
-
--Pokemon type canon ball war
-
--Might lose path, lose 2 days
--implement a fork 
-
-
-
+THINGS THAT WE NEED TO DO BUT ARE CURRENTLY NOT DOING:
+-recomendations for each item in the store
+-have 'enter option' in change pace/rations
+-if someone is already sick, don't do anything
+-if crew member dies, then don't let them get sick or die again
+-add newlines to break things up

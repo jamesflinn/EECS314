@@ -76,6 +76,7 @@ options_pace:		.asciiz "3. Change pace\n"
 options_food:		.asciiz "4. Change food rations\n"
 options_continue: 	.asciiz "5. Continue on journey\n"
 options_next_distance:	.asciiz "6. Check distance to next island\n"
+options_input_error:	.asciiz "Input must be between 1 and 6\n"
 
 # Options menu for start
 options_start:		.asciiz "1. Start on your voyage\n"
@@ -366,19 +367,9 @@ simulate_day_sea:
 	mflo $t4 
 	add $t3, $t3, $t4 
 	lw $t4, 0($t3)
-	beq $s1, 5, check_win
+	bge $s1, 1000, happy_ending
 	bge $s1, $t4, simulate_day_island #check is distance is equal to island location, if yes jump to simulate day island
 	j continue_day_sea  
-
-check_win: 
-	la $t3, island_array #checking the island array to find distance of next island location 
-	move $t4, $s3
-	addi $t1, $zero, 4
-	mult $t4, $t1
-	mflo $t4 
-	add $t3, $t3, $t4 
-	lw $t4, 0($t3)
-	bge $s1, $t4, happy_ending
 
 continue_day_sea:
 	#if island is not reached, continue 
@@ -603,6 +594,13 @@ option_menu_sea:
 	beq $t1, 4, call_change_rations_sea
 	beq $t1, 5, call_continue_sea 
 	beq $t1, 6, call_next_island_sea
+	bgt $t1, 6, options_sea_error
+
+options_sea_error:
+	la $a0, options_input_error
+	li $v0, 4
+	syscall
+	j option_menu_sea
 
 call_continue_sea:
 	lw $ra, 4($sp)
@@ -657,6 +655,13 @@ option_menu_island:
 	beq $t4, 4, call_change_pace
 	beq $t4, 5, call_change_rations
 	beq $t4, 6, call_distance_traveled
+	bgt $t4, 6, options_island_error
+
+options_island_error:
+	la $a0, options_input_error
+	li $v0, 4
+	syscall
+	j option_menu_island
 
 call_store_island:
 	jal store 
